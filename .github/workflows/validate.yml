@@ -3,7 +3,6 @@ name: Validate and tag
 on:
   push:
     branches:
-      - testing
       - main
     paths-ignore:
       - '.github/**'
@@ -19,8 +18,12 @@ jobs:
     steps:
       - name: Checkout git repository
         uses: actions/checkout@v4
-      - name: Validate modules
-        run: docker run --rm --mount type=bind,src=./,dst=/mnt/data,ro ghcr.io/senergy-platform/mgw-module-validator:latest -m -d -blk .github,.git
+      - name: Validate legacy modules
+        run: docker run --rm --mount type=bind,src=./legacy,dst=/mnt/data,ro ghcr.io/senergy-platform/mgw-module-validator:latest -m -blk .github,.git
+      - name: Validate stable modules
+        run: docker run --rm --mount type=bind,src=./stable,dst=/mnt/data,ro ghcr.io/senergy-platform/mgw-module-validator:latest -m -d -blk .github,.git
+      - name: Validate testing modules
+        run: docker run --rm --mount type=bind,src=./testing,dst=/mnt/data,ro ghcr.io/senergy-platform/mgw-module-validator:latest -m -blk .github,.git
       - name: Create tag
         run: |
           git config --local user.email "action@github.com"
