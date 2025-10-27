@@ -1,0 +1,161 @@
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-zigbee-dc-module/bridging
+name: Zigbee Device-Connector Bridged
+version: v1.1.1
+type: device-connector
+deploymentType: single
+license: "Apache License 2.0"
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: MGW_MQTT_BROKER
+          template: "tcp://{ref}:1881"
+          services:
+            - mgw-zigbee-dc
+services:
+  mgw-zigbee-dc:
+    name: mgw-zigbee-dc
+    image: ghcr.io/senergy-platform/mgw-zigbee-dc:v1.1.1
+secrets:
+  auth:
+    type: basic-auth
+    targets:
+      - refVar: AUTH_USERNAME
+        item: username
+        services:
+          - mgw-zigbee-dc
+      - refVar: AUTH_PASSWORD
+        item: password
+        services:
+          - mgw-zigbee-dc
+    userInput:
+      name: Auth Credentials
+configs:
+  mqttBroker:
+    dataType: string
+    value: "tcp://message-broker:1883"
+    targets:
+      - refVar: ZIGBEE_MQTT_BROKER
+        services:
+          - mgw-zigbee-dc
+    userInput:
+      type: text
+      name: Zigbee MQTT Broker
+      description: "e.g. tcp://message-broker:1883"
+      group: mqtt
+  mqttUsername:
+    dataType: string
+    optional: true
+    targets:
+      - refVar: ZIGBEE_MQTT_USER
+        services:
+          - mgw-zigbee-dc
+    userInput:
+      type: text
+      name: Zigbee MQTT Username
+      group: mqtt
+  mqttPassword:
+    dataType: string
+    optional: true
+    targets:
+      - refVar: ZIGBEE_MQTT_PW
+        services:
+          - mgw-zigbee-dc
+    userInput:
+      type: text
+      name: Zigbee MQTT Password
+      group: mqtt
+  mqttClientId:
+    dataType: string
+    value: "mgw-zigbee-dc_zigbee"
+    targets:
+      - refVar: ZIGBEE_MQTT_CLIENT_ID
+        services:
+          - mgw-zigbee-dc
+    userInput:
+      type: text
+      name: Zigbee MQTT ClientID
+      group: mqtt
+## mgw credentials are empty
+#  mgwMqttUsername:
+#    dataType: string
+#    targets:
+#      - refVar: MGW_USER
+#        services:
+#          - mgw-zigbee-dc
+#    userInput:
+#      type: text
+#      name: MGW MQTT Username
+#      group: mgw
+#  mgwMqttPassword:
+#    dataType: string
+#    targets:
+#      - refVar: MGW_MQTT_PW
+#        services:
+#          - mgw-zigbee-dc
+#    userInput:
+#      type: text
+#      name: MGW MQTT Password
+#      group: mgw
+  mgwMqttClientId:
+    dataType: string
+    value: "mgw-zigbee-dc_mgw"
+    targets:
+      - refVar: MGW_MQTT_CLIENT_ID
+        services:
+          - mgw-zigbee-dc
+  deviceIdPrefix:
+    dataType: string
+    value: "zigbee:"
+    targets:
+      - refVar: DEVICE_ID_PREFIX
+        services:
+          - mgw-zigbee-dc
+    userInput:
+      type: text
+      name: Zigbee Device ID Prefix
+      group: zigbee
+  zigbeeTopicPrefixPrefix:
+    dataType: string
+    value: "zigbee2mqtt/"
+    targets:
+      - refVar: ZIGBEE_MQTT_TOPIC_PREFIX
+        services:
+          - mgw-zigbee-dc
+    userInput:
+      type: text
+      name: Zigbee Topic Prefix
+      group: zigbee
+  authUrl:
+    dataType: string
+    value: "https://auth.senergy.infai.org"
+    targets:
+      - refVar: AUTH_ENDPOINT
+        services:
+          - mgw-zigbee-dc
+    userInput:
+      type: text
+      name: Auth URL
+      group: platform
+  deviceRepositoryUrl:
+    dataType: string
+    value: "https://api.senergy.infai.org/device-repository"
+    targets:
+      - refVar: DEVICE_REPOSITORY_URL
+        services:
+          - mgw-zigbee-dc
+    userInput:
+      type: text
+      name: Device Repository URL
+      group: platform
+inputGroups: 
+  mqtt:
+    name: "MQTT"
+  mgw:
+    name: "MGW"
+  platform:
+    name: "Platform"
+  zigbee:
+    name: "Zigbee"

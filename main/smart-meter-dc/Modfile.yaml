@@ -1,0 +1,102 @@
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-smart-meter-dc
+name: Smart Meter Device Connector
+description: 
+version: v1.0.11
+type: add-on
+deploymentType: single
+services:
+  connector:
+    name: Connector
+    image: ghcr.io/senergy-platform/smart-meter-dc:v1.0.10
+  
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: CONF_MSGBROKER_HOST
+          services:
+            - connector
+
+hostResources:
+  serial:
+    userInput:
+      name: Serial
+    targets:
+      - mountPoint: "/dev/reader"
+        services:
+          - connector
+
+configs:
+  brokerPort:
+    dataType: int
+    value: 1883
+    targets:
+      - refVar: CONF_MSGBROKER_PORT
+        services:
+          - connector
+    userInput:
+      type: number
+      name: Port of the MQTT broker
+
+  logger:
+    dataType: string
+    value: "info"
+    options:
+      - "warning"
+      - "info"
+      - "error"
+      - "debug"
+    targets:
+      - refVar: CONF_LOGGER_LEVEL
+        services:
+          - connector
+    userInput:
+      type: text
+      name: Logger Level
+
+  startDelayEnabled:
+    dataType: string
+    value: "True"
+    options:
+      - "True"
+      - "False"
+    targets:
+      - refVar: CONF_STARTDELAY_ENABLED
+        services:
+          - connector
+    userInput:
+      type: text
+      name: Timeout between retries to start operator
+
+  discoveryDevicePrefix:
+    dataType: string
+    targets:
+      - refVar: CONF_DISCOVERY_DEVICE_ID_PREFIX
+        services:
+          - connector
+    userInput:
+      type: text
+      name: Device Prefix
+
+  deviceType:
+    dataType: string
+    targets:
+      - refVar: CONF_SENERGY_DT_LGZXZMF100AC
+        services:
+          - connector
+    userInput:
+      type: text
+      name: Device Type
+
+  discoveryBasePath:
+    dataType: string
+    value: /dev/reader
+    targets:
+      - refVar: CONF_DISCOVERY_FULL_PATH
+        services:
+          - connector
+    userInput:
+      type: text
+      name: Device Type

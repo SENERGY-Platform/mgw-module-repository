@@ -1,0 +1,57 @@
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-last-value-module
+name: Last Value
+version: v0.0.6
+type: add-on
+deploymentType: single
+license: "Apache License 2.0"
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: MQTT_BROKER
+          template: "tcp://{ref}:1881"
+          services:
+            - mgw-last-value
+services:
+  mgw-last-value:
+    name: mgw-last-value
+    image: ghcr.io/senergy-platform/mgw-last-value:v1.0.1
+volumes:
+  mgw-last-value:
+    - mountPoint: /vol
+      services:
+        - mgw-last-value
+configs:
+  mqttClientId:
+    dataType: string
+    value: "mgw-last-value"
+    targets:
+      - refVar: MQTT_CLIENT_ID
+        services:
+          - mgw-last-value
+    userInput:
+      type: text
+      name: MQTT ClientID
+  badgerLocation:
+    dataType: string
+    value: "/vol/db"
+    targets:
+      - refVar: BADGER_LOCATION
+        services:
+          - mgw-last-value
+  debug:
+    dataType: string
+    value: "false"
+    options:
+      - "true"
+      - "false"
+    optionsExt: false
+    targets:
+      - refVar: DEBUG
+        services:
+          - mgw-last-value
+    userInput:
+      type: text
+      name: DEBUG

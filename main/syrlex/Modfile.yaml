@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SENERGY-Platform/mgw-modfile-lib/main/schema/v1.json
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-syrlex-module
+name: SyrLex
+version: v0.0.6
+type: device-connector
+deploymentType: single
+license: "Apache License 2.0"
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: MQTT_SERVER
+          template: "tcp://{ref}:1881"
+          services:
+            - syrlex2mqtt
+services:
+  syrlex2mqtt:
+    name: syrlex2mqtt
+    image: ghcr.io/senergy-platform/syrlex2mqtt:v0.0.6
+    ports:
+      - name: http
+        hostPort: 80
+        port: 80
+      - name: https
+        hostPort: 443
+        port: 443
+configs:
+  MQTT_USER:
+    value: " "
+    targets:
+      - refVar: MQTT_USER
+        services:
+          - syrlex2mqtt
+  MQTT_PASSWORD:
+    value: " "
+    targets:
+      - refVar: MQTT_PASSWORD
+        services:
+          - syrlex2mqtt
+  ADDITIONAL_PROPERTIES:
+    value: "PRS"
+    targets:
+      - refVar: ADDITIONAL_PROPERTIES
+        services:
+          - syrlex2mqtt
+  VERBOSE_LOGGING:
+    dataType: string
+    value: "false"
+    optionsExt: false
+    options:
+      - "true"
+      - "false"
+    userInput:
+      name: Debug Logging
+      type: text        
+    targets:
+      - refVar: VERBOSE_LOGGING
+        services:
+          - syrlex2mqtt

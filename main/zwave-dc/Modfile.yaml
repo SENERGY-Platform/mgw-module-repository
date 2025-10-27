@@ -1,0 +1,367 @@
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-zwave-dc-module
+name: Z-Wave Device-Connector
+version: v0.3.2
+type: device-connector
+deploymentType: single
+description: "after deployment, the zwave2mqtt service has to be manually configured: \n - Payload type: Entire Z-Wave value Object \n - Send Zwave events: (optional to enable live device register)"
+license: "Apache License 2.0"
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: MGW_MQTT_BROKER
+          template: "tcp://{ref}:1881"
+          services:
+            - mgw-zwave-dc
+        - refVar: ZWAVE_MQTT_BROKER
+          template: "tcp://{ref}:1881"
+          services:
+            - mgw-zwave-dc
+hostResources:
+  device:
+    userInput:
+      name: Z-Wave Controller Device
+    targets:
+      - mountPoint: "/dev/zwave"
+        services:
+          - zwave2mqtt
+services:
+  zwave2mqtt:
+    name: zwave2mqtt
+    image: zwavejs/zwavejs2mqtt:8.23
+    runConfig:
+      pseudoTTY: true
+#    ports:
+#      - port: 8091
+#        hostPort: 8091
+    httpEndpoints:
+      - name: Web UI
+        port: 8091
+        extPath: "ui"
+        proxyConf:
+          headers:
+            X-External-Path: "{loc}"
+          websocket: true
+  mgw-zwave-dc:
+    name: mgw-zwave-dc
+    image: ghcr.io/senergy-platform/mgw-zwave-dc:v1.2.1
+    requiredServices:
+      - zwave2mqtt
+volumes:
+  zwave2mqtt_store:
+    - mountPoint: /usr/src/app/store
+      services:
+        - zwave2mqtt
+secrets:
+  auth:
+    type: basic-auth
+    targets:
+      - refVar: AUTH_USERNAME
+        item: username
+        services:
+          - mgw-zwave-dc
+      - refVar: AUTH_PASSWORD
+        item: password
+        services:
+          - mgw-zwave-dc
+    userInput:
+      name: Auth Credentials
+configs:
+## broker config by dependency
+#  mqttBroker:
+#    dataType: string
+#    value: "tcp://message-broker:1883"
+#    targets:
+#      - refVar: ZWAVE_MQTT_BROKER
+#        services:
+#          - mgw-zwave-dc
+#    userInput:
+#      type: text
+#      name: MQTT Broker
+#      description: "e.g. tcp://message-broker:1883"
+#      group: mqtt
+## credentials are empty
+#  mqttUsername:
+#    dataType: string
+#    optional: true
+#    targets:
+#      - refVar: ZWAVE_MQTT_USER
+#        services:
+#          - mgw-zwave-dc
+#    userInput:
+#      type: text
+#      name: MQTT Username
+#      group: mqtt
+#  mqttPassword:
+#    dataType: string
+#    optional: true
+#    targets:
+#      - refVar: ZWAVE_MQTT_PW
+#        services:
+#          - mgw-zwave-dc
+#    userInput:
+#      type: text
+#      name: MQTT Password
+#      group: mqtt
+  disableLogColors:
+    dataType: string
+    value: "true"
+    targets:
+      - refVar: NO_LOG_COLORS
+        services:
+          - zwave2mqtt
+  mqttClientId:
+    dataType: string
+    value: "mgw-zwave-dc_zwave"
+    targets:
+      - refVar: ZWAVE_MQTT_CLIENT_ID
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: MQTT ClientID CMD
+      group: mqtt
+## mgw broker config by dependency
+#  mgwMqttBroker:
+#    dataType: string
+#    value: "tcp://message-broker:1883"
+#    targets:
+#      - refVar: MGW_MQTT_BROKER
+#        services:
+#          - mgw-zwave-dc
+#    userInput:
+#      type: text
+#      name: MGW MQTT Broker
+#      description: "e.g. tcp://message-broker:1883"
+#      group: mqtt
+## mgw credentials are empty
+#  mgwMqttUsername:
+#    dataType: string
+#    targets:
+#      - refVar: MGW_MQTT_USER
+#        services:
+#          - mgw-zwave-dc
+#    userInput:
+#      type: text
+#      name: MGW MQTT Username
+#      group: mgw
+#  mgwMqttPassword:
+#    dataType: string
+#    targets:
+#      - refVar: MGW_MQTT_PW
+#        services:
+#          - mgw-zwave-dc
+#    userInput:
+#      type: text
+#      name: MGW MQTT Password
+#      group: mgw
+  mgwMqttClientId:
+    dataType: string
+    value: "mgw-zwave-dc_mgw"
+    targets:
+      - refVar: MGW_MQTT_CLIENT_ID
+        services:
+          - mgw-zwave-dc
+  zwaveController:
+    dataType: string
+    value: "zwavejs2mqtt"
+    options:
+      - "zwave2mqtt"
+      - "zwavejs2mqtt"
+    targets:
+      - refVar: ZWAVE_CONTROLLER
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Z-Wave Controller
+      group: zwave
+  deviceIdPrefix:
+    dataType: string
+    value: "prefix"
+    targets:
+      - refVar: DEVICE_ID_PREFIX
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Z-Wave Device ID Prefix
+      group: zwave
+  deleteMissingDevices:
+    dataType: string
+    value: "true"
+    options:
+      - "true"
+      - "false"
+    targets:
+      - refVar: DELETE_MISSING_DEVICES
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Z-Wave Delete Missing Devices
+      group: zwave
+  deleteHusks:
+    dataType: string
+    value: "false"
+    options:
+      - "true"
+      - "false"
+    targets:
+      - refVar: DELETE_HUSKS
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Z-Wave Delete Husks
+      group: zwave
+  createMissingDeviceTypes:
+    dataType: string
+    value: "false"
+    options:
+      - "true"
+      - "false"
+    targets:
+      - refVar: CREATE_MISSING_DEVICE_TYPES
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Z-Wave Create Missing Device-Types
+      group: zwave
+  eventsForUnregisteredDevices:
+    dataType: string
+    value: "false"
+    options:
+      - "true"
+      - "false"
+    targets:
+      - refVar: EVENTS_FOR_UNREGISTERED_DEVICES
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Z-Wave Events for Unregistered Devices
+      group: zwave
+  initialUpdateRequestDelay:
+    dataType: string
+    value: "30s"
+    targets:
+      - refVar: INITIAL_UPDATE_REQUEST_DELAY
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Initial Update Request Delay
+      group: zwave
+  updatePeriod:
+    dataType: string
+    value: "15m"
+    targets:
+      - refVar: UPDATE_PERIOD
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Update-Period
+      group: zwave
+  zwaveValueEventTopic:
+    dataType: string
+    value: "zwave2mqtt/#"
+    targets:
+      - refVar: ZVAVE_VALUE_EVENT_TOPIC
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Z-Wave Value Event Topic
+      group: zwave
+  zwaveMqttDeviceStateTopic:
+    dataType: string
+    value: "zwave2mqtt/#"
+    targets:
+      - refVar: ZWAVE_MQTT_DEVICE_STATE_TOPIC
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Z-Wave Mqtt Device State Topic
+      group: zwave
+  zwaveMqttApiTopic:
+    dataType: string
+    value: "zwave2mqtt/_CLIENTS/ZWAVE_GATEWAY-SENERGY/api"
+    targets:
+      - refVar: ZWAVE_MQTT_API_TOPIC
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Z-Wave Mqtt Api Topic
+      group: zwave
+  zwaveNetworksEventsTopic:
+    dataType: string
+    value: "zwave2mqtt/_EVENTS/ZWAVE_GATEWAY-SENERGY"
+    targets:
+      - refVar: ZWAVE_NETWORK_EVENTS_TOPIC
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Z-Wave Network Event Topic
+      group: zwave
+  authUrl:
+    dataType: string
+    value: "https://auth.senergy.infai.org"
+    targets:
+      - refVar: AUTH_ENDPOINT
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Auth URL
+      group: platform
+  deviceRepositoryUrl:
+    dataType: string
+    value: "https://api.senergy.infai.org/device-repository"
+    targets:
+      - refVar: DEVICE_REPOSITORY_URL
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Device-Repository URL
+      group: platform
+  deviceManagerUrl:
+    dataType: string
+    value: "https://api.senergy.infai.org/device-manager"
+    targets:
+      - refVar: DEVICE_MANAGER_URL
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Device Manager URL
+      group: platform
+  debug:
+    dataType: string
+    value: "false"
+    options:
+      - "true"
+      - "false"
+    optionsExt: false
+    targets:
+      - refVar: DEBUG
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: DEBUG
+inputGroups:
+  mqtt:
+    name: "MQTT"
+  platform:
+    name: "Platform"
+  zwave:
+    name: "Z-Wave"

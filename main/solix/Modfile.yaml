@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SENERGY-Platform/mgw-modfile-lib/main/schema/v1.json
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-solix-module
+name: Solix
+version: v0.0.11
+type: device-connector
+deploymentType: single
+license: "Apache License 2.0"
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: CONF_MSGBROKER_HOST
+          services:
+            - mgw-solix-dc
+services:
+  mgw-solix-dc:
+    name: mgw-solix-dc
+    image: ghcr.io/senergy-platform/mgw-solix-dc:v0.0.11
+configs:
+  S2M_USER:
+    optional: false
+    userInput:
+      name: Solix Username (Email)
+      type: text
+    targets:
+      - refVar: CONF_SOLIX_USERNAME
+        services:
+          - mgw-solix-dc
+  S2M_PASSWORD:
+    optional: false
+    userInput:
+      name: Solix Password
+      type: text
+    targets:
+      - refVar: CONF_SOLIX_PASSWORD
+        services:
+          - mgw-solix-dc
+  S2M_COUNTRY:
+    optional: false
+    value: DE
+    userInput:
+      name: Country Code
+      type: text
+    targets:
+      - refVar: CONF_SOLIX_COUNTRY
+        services:
+          - mgw-solix-dc
+  S2M_POLL_INTERVAL:
+    optional: false
+    value: 60
+    dataType: int
+    userInput:
+      name: Poll Interval
+      type: number
+    targets:
+      - refVar: CONF_SENERGY_EVENTS_STATUS_SECONDS
+        services:
+          - mgw-solix-dc
+  CONF_LOGGER_LEVEL:
+    optional: false
+    value: "info"
+    options:
+      - "debug"
+      - "info"
+      - "warning"
+      - "error"
+      - "critical"
+    dataType: string
+    userInput:
+      name: Verbose Logging
+      type: text
+    targets:
+      - refVar: CONF_LOGGER_LEVEL
+        services:
+          - mgw-solix-dc

@@ -1,0 +1,73 @@
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-kasa-dc/module
+name: Kasa Device-Connector
+version: v0.0.3
+type: device-connector
+deploymentType: single
+license: "Apache License 2.0"
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: CONF_MSGBROKER_HOST
+          services:
+            - mgw-kasa-dc
+services:
+  mgw-kasa-dc:
+    name: mgw-kasa-dc
+    image: ghcr.io/senergy-platform/mgw-kasa-dc:v0.0.3
+configs:
+  discoveryIps:
+    dataType: string
+    isList: true
+    targets:
+      - refVar: CONF_DISCOVERY_IP_LIST
+        services:
+          - mgw-kasa-dc
+    userInput:
+      type: text
+      name: Discovery IPs
+      description: "List of IPs, e.g. 192.168.0.1, 192.168.0.2"
+  subnet:
+    dataType: string
+    targets:
+      - refVar: CONF_DISCOVERY_SUBNET
+        services:
+          - mgw-kasa-dc
+    userInput:
+      type: text
+      name: Scan Subnet
+      description: "IP Subnet, e.g. 192.168.1.0/24"
+  numWorkers:
+    dataType: int
+    value: 10
+    targets:
+      - refVar: CONF_DISCOVERY_NUM_WORKERS
+        services:
+          - mgw-kasa-dc
+  logLevel:
+    dataType: string
+    value: "info"
+    options:
+      - "info"
+      - "debug"
+    targets:
+      - refVar: CONF_LOGGER_LEVEL
+        services:
+          - mgw-kasa-dc
+    userInput:
+      type: text
+      name: Log Level
+  energySeconds:
+    dataType: int
+    value: 30
+    targets:
+      - refVar: CONF_SENERGY_EVENTS_ENERGY_SECONDS
+        services:
+          - mgw-kasa-dc
+    userInput:
+      type: number
+      name: Energy Data Poll Rate
+      description: "refresh energy data every x seconds"
+

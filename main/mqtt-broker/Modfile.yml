@@ -1,0 +1,86 @@
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-mqtt-broker
+name: MQTT Broker
+description: Eclipse Mosquitto MQTT broker with TLS support.
+license: Apache-2.0 license
+author: InfAI (CC SES)
+version: v1.3.2
+type: add-on
+tags:
+  - mqtt
+  - broker
+deploymentType: single
+services:
+  broker:
+    name: Mosquitto MQTT Broker
+    image: ghcr.io/senergy-platform/mosquitto-mqtt-broker:v1.3.2
+    ports:
+      - port: 1883
+        hostPort: 1883
+      - port: 8883
+        hostPort: 8883
+volumes:
+  data:
+    - mountPoint: /mosquitto/data
+      services:
+        - broker
+  log:
+    - mountPoint: /mosquitto/log
+      services:
+        - broker
+secrets:
+  cafile:
+    type: certificate
+    targets:
+      - mountPoint: /opt/tls/root.crt
+        services:
+          - broker
+    userInput:
+      name: Root certificate
+      description: PEM encoded CA certificates that are trusted when checking incoming client certificates.
+  keyfile:
+    type: private-key
+    targets:
+      - mountPoint: /opt/tls/broker.key
+        services:
+          - broker
+    userInput:
+      name: Broker key
+      description: PEM encoded private server key.
+  certfile:
+    type: certificate
+    targets:
+      - mountPoint: /opt/tls/broker.crt
+        services:
+          - broker
+    userInput:
+      name: Broker certificate
+      description: PEM encoded server certificate.
+  auth:
+    type: basic-auth
+    targets:
+      - refVar: USERNAME
+        item: username
+        services:
+          - broker 
+      - refVar: PASSWORD
+        item: password
+        services:
+          - broker 
+    userInput:
+      name: Auth Credentials
+    optional: true
+configs:
+  auth_state:
+    dataType: string
+    value: "no"
+    options:
+      - "yes"
+      - "no"
+    targets:
+      - refVar: AUTH_ENABLED
+        services:
+          - broker
+    userInput:
+      type: text
+      name: Use authentication

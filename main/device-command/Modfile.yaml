@@ -1,0 +1,142 @@
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-device-command
+name: Device Command
+version: v1.0.5
+type: add-on
+deploymentType: single
+license: "Apache License 2.0"
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: MGW_MQTT_BROKER
+          template: "tcp://{ref}:1881"
+          services:
+            - device-command
+  github.com/SENERGY-Platform/mgw-last-value-module:
+    version: <v2.0.0
+    requiredServices:
+      mgw-last-value:
+        - refVar: TIMESCALE_WRAPPER_URL
+          template: "http://{ref}:8080"
+          services:
+            - device-command
+services:
+  device-command:
+    name: device-command
+    image: ghcr.io/senergy-platform/device-command:v1.0.30
+    ports:
+      - port: 8080
+        hostPort: 8002
+    httpEndpoints:
+      - name: API
+        extPath: "api"
+        port: 8080
+volumes:
+  mgw-device-command:
+    - mountPoint: /vol
+      services:
+        - device-command
+secrets:
+  auth:
+    type: basic-auth
+    targets:
+      - refVar: AUTH_USER_NAME
+        item: username
+        services:
+          - device-command
+      - refVar: AUTH_PASSWORD
+        item: password
+        services:
+          - device-command
+    userInput:
+      name: Auth Credentials
+  clientId:
+    type: client-id
+    targets:
+      - refVar: AUTH_CLIENT_ID
+        services:
+          - device-command
+    userInput:
+      name: Auth Client ID
+configs:
+  authUrl:
+    dataType: string
+    value: "https://auth.senergy.infai.org"
+    targets:
+      - refVar: AUTH_ENDPOINT
+        services:
+          - device-command
+    userInput:
+      type: text
+      name: Auth URL
+      group: platform
+  deviceRepoUrl:
+    dataType: string
+    value: "https://api.senergy.infai.org/device-repository"
+    targets:
+      - refVar: DEVICE_REPOSITORY_URL
+        services:
+          - device-command
+    userInput:
+      type: text
+      name: Device Manager URL
+      group: platform
+  overwriteAuthToken:
+    dataType: string
+    value: "true"
+    targets:
+      - refVar: OVERWRITE_AUTH_TOKEN
+        services:
+          - device-command
+  iotFallbackFile:
+    dataType: string
+    value: "/vol/devicerepo_fallback.json"
+    targets:
+      - refVar: IOT_FALLBACK_FILE
+        services:
+          - device-command
+  useIotFallbackFile:
+    dataType: string
+    value: "true"
+    targets:
+      - refVar: USE_IOT_FALLBACK
+        services:
+          - device-command
+  impl:
+    dataType: string
+    value: "mgw"
+    targets:
+      - refVar: TIMESCALE_IMPL
+        services:
+          - device-command
+      - refVar: MARSHALLER_IMPL
+        services:
+          - device-command
+      - refVar: COM_IMPL
+        services:
+          - device-command
+  debug:
+    dataType: string
+    value: "false"
+    options:
+      - "true"
+      - "false"
+    optionsExt: false
+    targets:
+      - refVar: DEBUG
+        services:
+          - device-command
+    userInput:
+      type: text
+      name: DEBUG
+inputGroups:
+  mqtt:
+    name: "MQTT"
+  mgw:
+    name: "MGW"
+  platform:
+    name: "Platform"
+  zwave:
+    name: "Z-Wave"

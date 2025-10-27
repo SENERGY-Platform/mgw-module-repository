@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SENERGY-Platform/mgw-modfile-lib/main/schema/v1.json
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-hmip-module
+name: HmIP Raspberrymatic
+version: v0.0.3
+type: device-connector
+deploymentType: single
+license: "Apache License 2.0"
+hostResources:
+  device:
+    userInput:
+      name: HmIP-RFUSB Device
+    targets:
+      - mountPoint: "/dev/hmip"
+        services:
+          - raspberrymatic
+services:
+  raspberrymatic:
+    runConfig:
+      stopTimeout: 30s
+    name: ccu
+    image: ghcr.io/jens-maus/raspberrymatic:3.77.7.20240826
+    ports: # Woraround for missing replacements for HTTP 302
+          - port: 80
+            hostPort: 8091
+    httpEndpoints:
+      - name: GUI
+        port: 80
+        extPath: "gui"
+        stringSub:
+          filters:
+            '/pages/': '{loc}/pages/' # This also needs to happen for a HTTP 302 to /pages
+            '/login.': '{loc}/login.'
+            '/webui/': '{loc}/webui/'
+            '/ise/': '{loc}/ise/'
+volumes:
+  ccu_data:
+    - mountPoint: /usr/local
+      services:
+        - raspberrymatic

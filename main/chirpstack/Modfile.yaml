@@ -1,0 +1,150 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SENERGY-Platform/mgw-modfile-lib/main/schema/v1.json
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-chirpstack-module
+name: Chirpstack (LoRaWAN)
+version: v0.0.17
+type: device-connector
+deploymentType: single
+license: "Apache License 2.0"
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: MQTT_BROKER_HOST
+          services:
+            - chirpstack
+        - refVar: INTEGRATION__MQTT__AUTH__GENERIC__SERVERS
+          template: tcp://{ref}:1881
+          services:
+            - chirpstack-gateway-bridge
+            - chirpstack-gateway-bridge-basicstation
+serviceReferences:
+  postgres:
+    - refVar: POSTGRESQL_HOST
+      services:
+        - chirpstack
+  redis:
+    - refVar: REDIS_HOST
+      services:
+        - chirpstack
+services:
+  chirpstack:
+    name: chirpstack
+    image: chirpstack/chirpstack:4
+    runConfig:
+      command: 
+        - -c
+        - /etc/chirpstack
+    include:
+      - mountPoint: /etc/chirpstack
+        source: configuration/chirpstack
+    httpEndpoints:
+      - name: GUI
+        port: 8080
+        extPath: "gui"
+        stringSub:
+          filters:
+            '/static/': '{loc}/static/'
+            '/api.': '{loc}/api.'
+            '/icon.png': '{loc}/icon.png'
+            '/logo.png': '{loc}/logo.png'
+            '/assets/': '{loc}/assets/'
+    requiredServices:
+      - postgres
+      - redis
+  chirpstack-gateway-bridge:
+    name: chirpstack-gateway-bridge
+    ports:
+      - hostPort: 1700
+        port: 1700
+        protocol: udp
+    image: chirpstack/chirpstack-gateway-bridge:4
+    include:
+      - mountPoint: /etc/chirpstack-gateway-bridge
+        source: configuration/chirpstack-gateway-bridge
+  chirpstack-gateway-bridge-basicstation:
+    name: chirpstack-gateway-bridge-basicstation
+    ports:
+      - hostPort: 3001
+        port: 3001
+    image: chirpstack/chirpstack-gateway-bridge:4
+    runConfig:
+      command: 
+        - -c
+        - /etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge-basicstation-eu868.toml
+    include:
+      - mountPoint: /etc/chirpstack-gateway-bridge
+        source: configuration/chirpstack-gateway-bridge
+  chirpstack-rest-api:
+    name: chirpstack-rest-api
+    image: chirpstack/chirpstack-rest-api:4
+    runConfig:
+      command: 
+        - --server
+        - chirpstack:8080
+        - --bind 0.0.0.0:8090
+        - --insecure
+    #ports:
+    #- hostPort: 8090
+    #  port: 8090
+    requiredServices:
+      - chirpstack
+  postgres:
+    name: postgres
+    image: postgres:14-alpine
+    include:
+      - mountPoint: /docker-entrypoint-initdb.d
+        source: configuration/postgresql/initdb
+  redis:
+    name: redis
+    image: redis:7-alpine
+    runConfig:
+      command:
+      - redis-server
+      - --save
+      - "300"
+      - "1"
+      - --save
+      - "60"
+      - "100"
+      - --appendonly
+      - no
+configs:
+  INTEGRATION__MQTT__EVENT_TOPIC_TEMPLATE:
+    value: "eu868/gateway/{{ .GatewayID }}/event/{{ .EventType }}"
+    targets:
+      - refVar: INTEGRATION__MQTT__EVENT_TOPIC_TEMPLATE
+        services:
+          - chirpstack-gateway-bridge
+  INTEGRATION__MQTT__STATE_TOPIC_TEMPLATE:
+    value: eu868/gateway/{{ .GatewayID }}/state/{{ .StateType }}
+    targets:
+      - refVar: INTEGRATION__MQTT__STATE_TOPIC_TEMPLATE
+        services:
+          - chirpstack-gateway-bridge
+  INTEGRATION__MQTT__COMMAND_TOPIC_TEMPLATE:
+    value: eu868/gateway/{{ .GatewayID }}/command/#
+    targets:
+      - refVar: INTEGRATION__MQTT__COMMAND_TOPIC_TEMPLATE
+        services:
+          - chirpstack-gateway-bridge
+  POSTGRES_PASSWORD:
+    value: root
+    targets:
+      - refVar: POSTGRES_PASSWORD
+        services:
+          - postgres
+volumes:
+  lorawan-devices:
+    - mountPoint: /opt/lorawan-devices
+      services:
+        - chirpstack
+  postgres:
+    - mountPoint: /var/lib/postgresql/data
+      services:
+        - postgres
+  redis:
+    - mountPoint: /data
+      services:
+        - redis

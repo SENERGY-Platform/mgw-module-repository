@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SENERGY-Platform/mgw-modfile-lib/main/schema/v1.json
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-sungrow-module
+name: SunGrow
+version: v0.0.15
+type: device-connector
+deploymentType: multiple
+license: "Apache License 2.0"
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: MQTT_IP
+          services:
+            - sungather
+services:
+  sungather:
+    name: sungather
+    image: bohdans/sungather
+    include:
+      - mountPoint: /tmp/config.yaml
+        source: config.yaml
+    runConfig:
+      command:
+      - sh
+      - -c
+      - cp /tmp/config.yaml /tmp/config1.yaml && sed -i -e 's/INVERTER_IP/'"${INVERTER_IP}"'/g' /tmp/config1.yaml && sed -i -e 's/MQTT_IP/'"${MQTT_IP}"'/g' /tmp/config1.yaml && /opt/virtualenv/bin/python sungather.py -c /tmp/config1.yaml -l /logs/
+configs:
+  INVERTER_IP:
+    optional: false
+    userInput:
+      name: Inverter IP
+      type: text
+    targets:
+      - refVar: INVERTER_IP
+        services:
+          - sungather

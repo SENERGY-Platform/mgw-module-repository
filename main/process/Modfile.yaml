@@ -1,0 +1,408 @@
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-process-module
+name: Process Module
+version: v0.1.39
+type: add-on
+deploymentType: single
+license: "Apache License 2.0"
+services:
+  process-engine-db:
+    name: process-engine-db
+    image: postgres:11.2
+  process-engine:
+    name: process-engine
+    image: ghcr.io/senergy-platform/process-engine:v1.0.4
+    requiredServices:
+      - process-engine-db
+  process-sync:
+    name: process-sync
+    image: ghcr.io/senergy-platform/mgw-process-sync-client:v1.0.30
+    requiredServices:
+      - process-engine
+  external-task-worker:
+    name: external-task-worker
+    image: ghcr.io/senergy-platform/mgw-external-task-worker:v1.0.27
+    requiredServices:
+      - process-engine
+  process-io-db:
+    name: process-io-db
+    image: postgres:11.2
+  process-io:
+    name: process-io
+    image: ghcr.io/senergy-platform/process-io-worker:v1.0.9
+    requiredServices:
+      - process-engine
+      - process-io-db
+  event-worker:
+    name: event-worker
+    image: ghcr.io/senergy-platform/event-worker:v1.0.21
+    requiredServices:
+      - process-engine
+  notify:
+    name: notify
+    image: ghcr.io/senergy-platform/mgw-notifier:v1.0.2
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: MGW_MQTT_BROKER
+          template: "tcp://{ref}:1881"
+          services:
+            - process-io
+            - event-worker
+        - refVar: MQTT_BROKER
+          template: "tcp://{ref}:1881"
+          services:
+            - process-sync
+            - external-task-worker
+  github.com/SENERGY-Platform/mgw-last-value-module:
+    version: <v2.0.0
+    requiredServices:
+      mgw-last-value:
+        - refVar: TIMESCALE_WRAPPER_URL
+          template: "http://{ref}:8080"
+          services:
+            - external-task-worker
+serviceReferences:
+  process-engine-db:
+    - refVar: WAIT_FOR
+      template: "{ref}:5432"
+      services:
+        - process-engine
+    - refVar: DB_HOST
+      services:
+        - process-engine
+    - refVar: DB_URL
+      template: "jdbc:postgresql://{ref}:5432/camunda"
+      services:
+        - process-engine
+    - refVar: CAMUNDA_DB
+      template: "postgres://camunda:camunda@{ref}/camunda?sslmode=disable"
+      services:
+        - process-sync
+  process-io-db:
+    - refVar: POSTGRES_CONN_STRING
+      template: "postgres://processio:processio@{ref}:5432/processio?sslmode=disable"
+      services:
+        - process-io
+  process-engine:
+    - refVar: CAMUNDA_URL
+      template: "http://{ref}:8080"
+      services:
+        - process-io
+        - process-sync
+        - external-task-worker
+    - refVar: EVENT_TRIGGER_URL
+      template: "http://{ref}:8080/engine-rest/message"
+      services:
+        - event-worker
+  notify:
+    - refVar: NOTIFICATION_URL
+      template: "http://{ref}:8080"
+      services:
+        - process-sync
+  process-sync:
+    - refVar: MGW_PROCESS_SYNC_CLIENT_URL
+      template: "http://{ref}:8080"
+      services:
+        - event-worker
+volumes:
+  camundaDbDataV2:
+    - mountPoint: /var/lib/postgresql/data
+      services:
+        - process-engine-db
+  processIoDbData:
+    - mountPoint: /var/lib/postgresql/data
+      services:
+        - process-io-db
+  processSyncData:
+    - mountPoint: /root/db
+      services:
+        - process-sync
+secrets:
+  auth:
+    type: basic-auth
+    targets:
+      - refVar: AUTH_USER_NAME
+        item: username
+        services:
+          - external-task-worker
+          - notify
+          - event-worker
+      - refVar: AUTH_PASSWORD
+        item: password
+        services:
+          - external-task-worker
+          - notify
+          - event-worker
+    userInput:
+      name: Auth Credentials
+configs:
+  processHistoryCleanupInterval:
+    dataType: string
+    value: "24h"
+    targets:
+      - refVar: HISTORY_CLEANUP_INTERVAL
+        services:
+          - process-sync
+    userInput:
+      type: text
+      name: Process History Cleanup Interval
+  processHistoryCleanupFilterLocaly:
+    dataType: string
+    value: "false"
+    options:
+      - "true"
+      - "false"
+    optionsExt: false
+    targets:
+      - refVar: HISTORY_CLEANUP_FILTER_LOCALLY
+        services:
+          - process-sync
+    userInput:
+      type: text
+      name: Process History Cleanup Locally
+  timezone:
+    dataType: string
+    value: "Europe/Berlin"
+    targets:
+      - refVar: TZ
+        services:
+          - process-engine
+      - refVar: HISTORY_CLEANUP_LOCATION
+        services:
+          - process-sync
+    userInput:
+      type: text
+      name: Location / Timezone
+  processTaskRetryTimeout:
+    dataType: int
+    value: 10000
+    targets:
+      - refVar: CAMUNDA_FETCH_LOCK_DURATION
+        services:
+          - external-task-worker
+    userInput:
+      type: number
+      description: time in ms
+      name: Process-Task Retry Timeout
+  processHistoryCleanupBatchSize:
+    dataType: int
+    value: 100
+    targets:
+      - refVar: HISTORY_CLEANUP_BATCH_SIZE
+        services:
+          - process-sync
+    userInput:
+      type: number
+      name: Process History Cleanup Batch-Size
+  processHistoryCleanupMaxAge:
+    dataType: string
+    value: "168h"
+    targets:
+      - refVar: HISTORY_CLEANUP_MAX_AGE
+        services:
+          - process-sync
+    userInput:
+      type: text
+      name: Process History Cleanup Max Age
+  processEngineDbDriver:
+    dataType: string
+    value: "org.postgresql.Driver"
+    targets:
+      - refVar: DB_DRIVER
+        services:
+          - process-engine
+  processEngineDbPostgres:
+    dataType: string
+    value: "postgres"
+    targets:
+      - refVar: DATABASE
+        services:
+          - process-engine
+  processEngineDbPort:
+    dataType: string
+    value: "5432"
+    targets:
+      - refVar: DB_PORT
+        services:
+          - process-engine
+  processEngineDbName:
+    dataType: string
+    value: "camunda"
+    targets:
+      - refVar: DB_NAME
+        services:
+          - process-engine
+      - refVar: POSTGRES_DB
+        services:
+          - process-engine-db
+  processEngineDbUser:
+    dataType: string
+    value: "camunda"
+    targets:
+      - refVar: DB_USERNAME
+        services:
+          - process-engine
+      - refVar: POSTGRES_USER
+        services:
+          - process-engine-db
+  processEngineDbPw:
+    dataType: string
+    value: "camunda"
+    targets:
+      - refVar: DB_PASSWORD
+        services:
+          - process-engine
+          - process-engine-db
+      - refVar: POSTGRES_PASSWORD
+        services:
+          - process-engine-db
+  processEngineDbDataV2:
+    dataType: string
+    value: "/var/lib/postgresql/data/pgdata"
+    targets:
+      - refVar: PGDATA
+        services:
+          - process-engine-db
+  processIoDbName:
+    dataType: string
+    value: "processio"
+    targets:
+      - refVar: POSTGRES_DB
+        services:
+          - process-io-db
+  processIoDbUser:
+    dataType: string
+    value: "processio"
+    targets:
+      - refVar: POSTGRES_USER
+        services:
+          - process-io-db
+  processIoDbPw:
+    dataType: string
+    value: "processio"
+    targets:
+      - refVar: POSTGRES_PASSWORD
+        services:
+          - process-io-db
+  processIoDbDataV2:
+    dataType: string
+    value: "/var/lib/postgresql/data/pgdata"
+    targets:
+      - refVar: PGDATA
+        services:
+          - process-io-db
+  processIoIncidentHandler:
+    dataType: string
+    value: "mgw"
+    targets:
+      - refVar: INCIDENT_HANDLER
+        services:
+          - process-io
+  processIoDataSource:
+    dataType: string
+    value: "postgres"
+    targets:
+      - refVar: IO_DATA_SOURCE
+        services:
+          - process-io
+  processIoWatchProcessSync:
+    dataType: string
+    value: "true"
+    targets:
+      - refVar: WATCH_MGW_PROCESS_SYNC
+        services:
+          - process-io
+  processSyncData:
+    dataType: string
+    value: "/root/db/bolt.db"
+    targets:
+      - refVar: DEPLOYMENT_METADATA_STORAGE
+        services:
+          - process-sync
+  taskWorkerStrategy:
+    dataType: string
+    value: "pessimistic"
+    targets:
+      - refVar: COMPLETION_STRATEGY
+        services:
+          - external-task-worker
+  taskWorkerCamundaTopic:
+    dataType: string
+    value: "pessimistic"
+    targets:
+      - refVar: CAMUNDA_TOPIC
+        services:
+          - external-task-worker
+  eventWorkerAuthClientId:
+    dataType: string
+    value: "client-connector-lib"
+    targets:
+      - refVar: AUTH_CLIENT_ID
+        services:
+          - event-worker
+  eventWorkerMode:
+    dataType: string
+    value: "fog"
+    targets:
+      - refVar: MODE
+        services:
+          - event-worker
+  eventWorkerMqttClient:
+    dataType: string
+    value: "mgw-event-worker"
+    targets:
+      - refVar: MGW_MQTT_CLIENT_ID
+        services:
+          - event-worker
+  authUrl:
+    dataType: string
+    value: "https://auth.senergy.infai.org"
+    targets:
+      - refVar: AUTH_ENDPOINT
+        services:
+          - external-task-worker
+          - notify
+          - event-worker
+    userInput:
+      type: text
+      name: Auth URL
+  deviceRepositoryUrl:
+    dataType: string
+    value: "https://api.senergy.infai.org/device-repository"
+    targets:
+      - refVar: DEVICE_REPO_URL
+        services:
+          - external-task-worker
+          - event-worker
+    userInput:
+      type: text
+      name: Device Repository URL
+  notificationUrl:
+    dataType: string
+    value: "https://api.senergy.infai.org/notifications-v2/notifications"
+    targets:
+      - refVar: NOTIFICATION_URL
+        services:
+          - notify
+    userInput:
+      type: text
+      name: Notification URL
+  debug:
+    dataType: string
+    value: "false"
+    options:
+      - "true"
+      - "false"
+    optionsExt: false
+    targets:
+      - refVar: DEBUG
+        services:
+          - external-task-worker
+          - notify
+          - process-sync
+    userInput:
+      type: text
+      name: DEBUG
