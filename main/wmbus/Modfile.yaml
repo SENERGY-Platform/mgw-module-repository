@@ -1,0 +1,66 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SENERGY-Platform/mgw-modfile-lib/main/schema/v1.json
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-wmbus-module
+name: wmbus Module
+version: v0.0.12
+type: device-connector
+deploymentType: single
+description: ""
+license: "Apache License 2.0"
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: MQTT_CONN_STR
+          template: "tcp://{ref}:1881"
+          services:
+            - wmbus-dc
+hostResources:
+  device:
+    userInput:
+      name: USB Bus
+      description: Please create a host resource /dev/bus/usb and select it here
+    targets:
+      - mountPoint: "/dev/bus/usb"
+        services:
+          - wmbusmeters
+services:
+  wmbusmeters:
+    name: wmbusmeters
+    image: wmbusmeters/wmbusmeters:release-2.0.0
+    include:
+      - mountPoint: /wmbusmeters_data/etc/wmbusmeters.conf
+        source: wmbusmeters.conf
+    deviceCGroupRules:
+      - "c 189:* rwm"
+  wmbus-dc:
+    name: wmbus-dc
+    image: ghcr.io/senergy-platform/mgw-wmbus-dc:v0.0.6
+    
+volumes:
+  wmbusmeters_logs:
+    - mountPoint: /logs
+      services:
+        - wmbusmeters
+        - wmbus-dc
+
+configs:
+  NIMBUS_ID:
+    value: "nimbus"
+    targets:
+      - refVar: NIMBUS_ID
+        services:
+          - wmbus-dc
+    userInput:
+      type: text
+      name: Nimbus Local ID
+  NIMBUS_NAME:
+    value: "Nimbus"
+    targets:
+      - refVar: NIMBUS_NAME
+        services:
+          - wmbus-dc
+    userInput:
+      type: text
+      name: Nimbus Device Name
