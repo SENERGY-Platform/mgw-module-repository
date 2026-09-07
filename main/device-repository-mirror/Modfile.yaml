@@ -1,0 +1,72 @@
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-device-repository-mirror-module
+name: Device-Repository Mirror Module
+version: v1.1.0
+type: add-on
+deploymentType: single
+license: "Apache License 2.0"
+services:
+  device-repo-mirror-db:
+    name: device-repo-mirror-db
+    image: mongo:4.1.11
+  device-repo-mirror:
+    name: device-repo-mirror
+    image: ghcr.io/senergy-platform/device-repository:v0.2.49
+    requiredServices:
+      - device-repo-mirror-db
+dependencies:
+  github.com/SENERGY-Platform/mgw-cloud-proxy/mgw-module:
+    version: "<v1.0.0"
+    requiredServices:
+      gateway:
+        - refVar: MGW_MIRROR_SOURCE_URL
+          template: "http://{ref}/device-repository"
+          services:
+            - device-repo-mirror
+        - refVar: MGW_CERT_MANAGER_URL
+          template: "http://{ref}:8080/api"
+          services:
+            - device-repo-mirror
+serviceReferences:
+  device-repo-mirror-db:
+    - refVar: MONGO_URL
+      template: "mongodb://{ref}:27017"
+      services:
+        - device-repo-mirror
+volumes:
+  device-repo-mirror-db-volume:
+    - mountPoint: /data/db
+      services:
+        - device-repo-mirror-db
+configs:
+  asMgwMirror:
+    dataType: string
+    value: "true"
+    targets:
+      - refVar: AS_MGW_MIRROR
+        services:
+          - device-repo-mirror
+  mirrorUpdateInterval:
+    dataType: string
+    value: "10m"
+    targets:
+      - refVar: MGW_MIRROR_UPDATE_INTERVAL
+        services:
+          - device-repo-mirror
+    userInput:
+      type: text
+      name: Mirror Update Interval
+  debug:
+    dataType: string
+    value: "false"
+    options:
+      - "true"
+      - "false"
+    optionsExt: false
+    targets:
+      - refVar: DEBUG
+        services:
+          - device-repo-mirror
+    userInput:
+      type: text
+      name: DEBUG

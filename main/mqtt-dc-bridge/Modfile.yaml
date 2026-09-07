@@ -1,6 +1,7 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SENERGY-Platform/mgw-modfile-lib/main/schema/v1.json
 modfileVersion: "v1"
-id: github.com/SENERGY-Platform/mgw-mqtt-dc-module
-name: Mqtt Device-Connector
+id: github.com/SENERGY-Platform/mgw-mqtt-dc-module/bridging
+name: Mqtt Device-Connector (Bridging)
 version: v1.1.0
 type: device-connector
 deploymentType: single
@@ -30,51 +31,39 @@ dependencies:
           template: "tcp://{ref}:1881"
           services:
             - mgw-mqtt-dc
-        - refVar: MQTT_BROKER
-          template: "tcp://{ref}:1881"
-          services:
-            - mgw-mqtt-dc
 services:
   mgw-mqtt-dc:
     name: mgw-mqtt-dc
     image: ghcr.io/senergy-platform/mgw-mqtt-dc:v1.0.35
+secrets:
+  mqtt-credentials:
+    optional: true
+    type: basic-auth
+    targets:
+      - refVar: MQTT_USER
+        item: username
+        services:
+          - mgw-mqtt-dc
+      - refVar: MQTT_PW
+        item: password
+        services:
+          - mgw-mqtt-dc
+    userInput:
+      name: MQTT Credentials
+      group: remote-mqtt
 configs:
-  ## broker config by dependency
-  #  mqttBroker:
-  #    dataType: string
-  #    value: "tcp://message-broker:1881"
-  #    targets:
-  #      - refVar: MQTT_BROKER
-  #        services:
-  #          - mgw-mqtt-dc
-  #    userInput:
-  #      type: text
-  #      name: MQTT Broker
-  #      description: "e.g. tcp://message-broker:1881"
-  #      group: mqtt
-  ## credentials are empty
-  #  mqttUsername:
-  #    dataType: string
-  #    optional: true
-  #    targets:
-  #      - refVar: MQTT_USER
-  #        services:
-  #          - mgw-mqtt-dc
-  #    userInput:
-  #      type: text
-  #      name: MQTT Username
-  #      group: mqtt
-  #  mqttPassword:
-  #    dataType: string
-  #    optional: true
-  #    targets:
-  #      - refVar: MQTT_PW
-  #        services:
-  #          - mgw-mqtt-dc
-  #    userInput:
-  #      type: text
-  #      name: MQTT Password
-  #      group: mqtt
+  mqttBroker:
+    dataType: string
+    value: "tcp://message-broker:1883"
+    targets:
+      - refVar: MQTT_BROKER
+        services:
+          - mgw-mqtt-dc
+    userInput:
+      type: text
+      name: MQTT Broker
+      description: "e.g. tcp://message-broker:1883"
+      group: remote-mqtt
   mqttCmdClientId:
     dataType: string
     value: "mgw-mqtt-dc-cmd"
@@ -85,7 +74,7 @@ configs:
     userInput:
       type: text
       name: MQTT ClientID Event
-      group: mqtt
+      group: remote-mqtt
   mqttEventClientId:
     dataType: string
     value: "mgw-mqtt-dc-event"
@@ -96,11 +85,26 @@ configs:
     userInput:
       type: text
       name: MQTT ClientID CMD
-      group: mqtt
+      group: remote-mqtt
+  mqttSkipVerify:
+    dataType: string
+    value: "false"
+    options:
+      - "true"
+      - "false"
+    optionsExt: false
+    userInput:
+      name: Skip Certificate Verification
+      type: text
+      group: remote-mqtt
+    targets:
+      - refVar: MQTT_INSECURE_SKIP_VERIFY
+        services:
+          - mgw-mqtt-dc
 ## mgw broker config by dependency
 #  mgwMqttBroker:
 #    dataType: string
-#    value: "tcp://message-broker:1881"
+#    value: "tcp://message-broker:1883"
 #    targets:
 #      - refVar: MGW_MQTT_BROKER
 #        services:
@@ -108,7 +112,7 @@ configs:
 #    userInput:
 #      type: text
 #      name: MGW MQTT Broker
-#      description: "e.g. tcp://message-broker:1881"
+#      description: "e.g. tcp://message-broker:1883"
 #      group: mqtt
 ## mgw credentials are empty
 #  mgwMqttUsername:
@@ -140,6 +144,10 @@ configs:
       - refVar: MGW_MQTT_CLIENT_ID
         services:
           - mgw-mqtt-dc
+    userInput:
+      type: text
+      name: MGW MQTT Client ID
+      group: mqtt
   generatorUse:
     dataType: string
     value: "true"
@@ -163,4 +171,6 @@ configs:
       name: DEBUG
 inputGroups: 
   mqtt:
-    name: "MQTT"
+    name: "MGW MQTT"
+  remote-mqtt:
+    name: "Remote MQTT"

@@ -1,16 +1,32 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-zwave-dc-module
 name: Z-Wave Device-Connector
-version: v0.3.2
+version: v1.3.0
 type: device-connector
 deploymentType: single
 description: "after deployment, the zwave2mqtt service has to be manually configured: \n - Payload type: Entire Z-Wave value Object \n - Send Zwave events: (optional to enable live device register)"
 license: "Apache License 2.0"
 dependencies:
+  github.com/SENERGY-Platform/mgw-device-repository-mirror-module:
+    version: "<v2.0.0"
+    requiredServices:
+      device-repo-mirror:
+        - refVar: DEVICE_REPOSITORY_URL
+          template: "http://{ref}:8080"
+          services:
+            - mgw-zwave-dc
+        - refVar: DEVICE_MANAGER_URL
+          template: "http://{ref}:8080"
+          services:
+            - mgw-zwave-dc
   github.com/SENERGY-Platform/mgw-mqtt-broker:
     version: <v2.0.0
     requiredServices:
       broker:
+        - refVar: MQTT_BROKER_HOST
+          template: "{ref}"
+          services:
+            - zwave2mqtt
         - refVar: MGW_MQTT_BROKER
           template: "tcp://{ref}:1881"
           services:
@@ -30,7 +46,7 @@ hostResources:
 services:
   zwave2mqtt:
     name: zwave2mqtt
-    image: zwavejs/zwavejs2mqtt:8.23
+    image: ghcr.io/senergy-platform/zwavejs2mqtt:latest
     runConfig:
       pseudoTTY: true
 #    ports:
@@ -46,7 +62,7 @@ services:
           websocket: true
   mgw-zwave-dc:
     name: mgw-zwave-dc
-    image: ghcr.io/senergy-platform/mgw-zwave-dc:v1.2.1
+    image: ghcr.io/senergy-platform/mgw-zwave-dc:v1.4.1
     requiredServices:
       - zwave2mqtt
 volumes:
@@ -54,20 +70,6 @@ volumes:
     - mountPoint: /usr/src/app/store
       services:
         - zwave2mqtt
-secrets:
-  auth:
-    type: basic-auth
-    targets:
-      - refVar: AUTH_USERNAME
-        item: username
-        services:
-          - mgw-zwave-dc
-      - refVar: AUTH_PASSWORD
-        item: password
-        services:
-          - mgw-zwave-dc
-    userInput:
-      name: Auth Credentials
 configs:
 ## broker config by dependency
 #  mqttBroker:
@@ -311,39 +313,6 @@ configs:
       type: text
       name: Z-Wave Network Event Topic
       group: zwave
-  authUrl:
-    dataType: string
-    value: "https://auth.senergy.infai.org"
-    targets:
-      - refVar: AUTH_ENDPOINT
-        services:
-          - mgw-zwave-dc
-    userInput:
-      type: text
-      name: Auth URL
-      group: platform
-  deviceRepositoryUrl:
-    dataType: string
-    value: "https://api.senergy.infai.org/device-repository"
-    targets:
-      - refVar: DEVICE_REPOSITORY_URL
-        services:
-          - mgw-zwave-dc
-    userInput:
-      type: text
-      name: Device-Repository URL
-      group: platform
-  deviceManagerUrl:
-    dataType: string
-    value: "https://api.senergy.infai.org/device-manager"
-    targets:
-      - refVar: DEVICE_MANAGER_URL
-        services:
-          - mgw-zwave-dc
-    userInput:
-      type: text
-      name: Device Manager URL
-      group: platform
   debug:
     dataType: string
     value: "false"

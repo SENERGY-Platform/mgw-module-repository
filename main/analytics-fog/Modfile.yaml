@@ -2,7 +2,7 @@ modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-analytics-fog-module
 name: Analytics Fog
 description: Analytics-Fog enables the gateway to start analytics pipelines on the device. It also controls the data sharing with the cloud.
-version: v1.1.28
+version: v3.0.0
 type: add-on
 tags:
   - analytics
@@ -11,13 +11,13 @@ deploymentType: single
 services:
   fog-agent:
     name: Fog Agent
-    image: ghcr.io/senergy-platform/analytics-fog-agent:v1.0.13
+    image: ghcr.io/senergy-platform/analytics-fog-agent:v2.0.10
   fog-master:
     name: Fog Master
-    image: ghcr.io/senergy-platform/analytics-fog-master:v1.0.6
+    image: ghcr.io/senergy-platform/analytics-fog-master:v2.0.21
   fog-connector:
     name: Fog Connector
-    image: ghcr.io/senergy-platform/analytics-fog-connector:v1.0.9
+    image: ghcr.io/senergy-platform/analytics-fog-connector:v2.1.0
 
 auxServices:
   operator:
@@ -47,6 +47,9 @@ inputGroups:
   master-settings:
     name: Master
     group: local-settings
+  connector-settings:
+    name: Connector
+    group: local-settings
   
 volumes:
   master-data: 
@@ -68,6 +71,18 @@ dependencies:
             - fog-agent
             - fog-master
             - fog-connector
+  github.com/SENERGY-Platform/mgw-cloud-proxy/mgw-module:
+    version: "<v1.0.0"
+    requiredServices:
+      gateway:
+        - refVar: PLATFORM_BROKER_HOST
+          template: "{ref}"
+          services:
+            - fog-connector
+        - refVar: MGW_CERT_MANAGER_URL
+          template: "http://{ref}:8080/api"
+          services:
+            - fog-connector
 
 configs:
   operatorTimeout:
@@ -79,20 +94,20 @@ configs:
           - fog-agent
     userInput:
       type: number
-      name: Timeout until operator needs to be started/stopped
+      name: Timeout for starting and stopping the operator container
       group: agent-settings
 
-  retriesOperatorStart:
+  syncInterval:
     dataType: int
-    value: 2
+    value: 120
     targets:
-      - refVar: RETRIES_START_OPERATOR
+      - refVar: SYNC_INTERVAL
         services:
-          - fog-master
+          - fog-connector
     userInput:
       type: number
-      name: Number of retries to start operator
-      group: master-settings
+      name: Time in seconds to sync running operators with the platform
+      group: connector-settings
 
   debug:
     dataType: string
@@ -111,78 +126,48 @@ configs:
       name: Debug mode
       group: local-settings
 
-  retryTimeoutOperatorStart:
-    dataType: int
-    value: 60
+  data_dir:
+    dataType: string
+    value: "/data"
     targets:
-      - refVar: TIMEOUT_START_OPERATOR
+      - refVar: DATA_DIR
         services:
           - fog-master
+          - fog-agent
     userInput:
-      type: number
-      name: Timeout between retries to start operator
-      group: master-settings
+      type: text
+      name: Data Directory
+      group: local-settings
+
+  db_path:
+    dataType: string
+    value: "/data/sqlite.db"
+    targets:
+      - refVar: DATABASE_PATH
+        services:
+          - fog-master
+          - fog-agent
+    userInput:
+      type: text
+      name: Path to Database
+      group: local-settings
 
   platformBrokerPort:
     dataType: int
-    value: 2883
+    value: 1883
     targets:
       - refVar: PLATFORM_BROKER_PORT
         services:
           - fog-connector
-    userInput:
-      type: number
-      name: Port of the platform mqtt broker
-      group: cloud-mqtt
-
-  platformBrokerHost:
-    dataType: string
-    value: "connector.senergy.infai.org"
-    targets:
-      - refVar: PLATFORM_BROKER_HOST
-        services:
-          - fog-connector
-    userInput:
-      type: text
-      name: Hostname of the platform mqtt broker
-      group: cloud-mqtt
-
-  keycloakUrl:
-    dataType: string
-    value: "https://auth.senergy.infai.org/auth"
-    targets:
-      - refVar: KEYCLOAK_URL
-        services:
-          - fog-connector
-    userInput:
-      type: text
-      name: URL to keycloak
-      group: cloud-api
 
   fogBrokerPort:
     dataType: int
-    value: 1883
+    value: 1881
     targets:
       - refVar: FOG_BROKER_PORT
         services:
           - fog-master
           - fog-agent
-    userInput:
-      type: number
-      name: Port of the local mqtt broker
-      group: local-settings
-
-  clientID:
-    dataType: string
-    value: analytics-fog-connector
-    targets:
-      - refVar: CLIENT_ID
-        services:
-          - fog-connector
-    userInput:
-      type: text
-      name: Client ID for auth
-      group: cloud-auth
 
   moduleManagerUrl:
     dataType: string
@@ -199,19 +184,3 @@ configs:
       - refVar: CONTAINER_MANAGER
         services:
           - fog-agent
-
-secrets:
-  auth:
-    type: basic-auth
-    targets:
-      - refVar: AUTH_USERNAME
-        item: username
-        services:
-          - fog-connector 
-      - refVar: AUTH_PASSWORD
-        item: password
-        services:
-          - fog-connector 
-    userInput:
-      name: Auth Credentials
-      group: cloud-auth

@@ -1,0 +1,204 @@
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-cloud-proxy/mgw-module
+name: Cloud Proxy
+description: Provides access to cloud HTTP APIs and MQTT broker.
+license: Apache-2.0 license
+author: InfAI (CC SES)
+version: v0.0.19
+type: add-on
+deploymentType: single
+services:
+  gateway:
+    name: Gateway
+    image: ghcr.io/senergy-platform/mgw-cloud-proxy:0.2.4
+    runConfig:
+      stopTimeout: "20s"
+    httpEndpoints:
+      - name: Cert Manager
+        port: 8080
+        extPath: "manager"
+volumes:
+  cm-data:
+    - mountPoint: /opt/cert-manager/data
+      services:
+        - gateway
+inputGroups:
+  cm:
+    name: Certificate Manager
+  proxy:
+    name: Proxy
+  cm-log:
+    name: Log settings
+    group: cm
+  proxy-cloud-api:
+    name: Cloud API
+    group: proxy
+  proxy-cloud-mqtt:
+    name: Cloud MQTT broker
+    group: proxy
+configs:
+  cm-log-level:
+    value: "warn"
+    options:
+      - "debug"
+      - "info"
+      - "warn"
+      - "error"
+    targets:
+      - refVar: LOGGER_LEVEL
+        services:
+          - gateway
+    userInput:
+      type: text
+      name: Level
+      group: cm-log
+    optional: true
+  cm-http-access-log:
+    value: "false"
+    options:
+      - "false"
+      - "true"
+    targets:
+      - refVar: HTTP_ACCESS_LOG
+        services:
+          - gateway
+    userInput:
+      type: text
+      name: HTTP access log
+      group: cm-log
+    optional: true
+  cm-cloud-auth-url:
+    targets:
+      - refVar: KEYCLOAK_URL
+        services:
+          - gateway
+    userInput:
+      type: text
+      name: Cloud Auth URL
+      group: cm
+  cm-cloud-auth-realm:
+    value: "master"
+    targets:
+      - refVar: KEYCLOAK_REALM
+        services:
+          - gateway
+  cm-cloud-auth-client:
+    value: "mgw-cloud-proxy"
+    targets:
+      - refVar: KEYCLOAK_CLIENT_ID
+        services:
+          - gateway
+  cm-cloud-api-token-base-url:
+    targets:
+      - refVar: CLOUD_TOKEN_BASE_URL
+        services:
+          - gateway
+    userInput:
+      type: text
+      name: Cloud API URL
+      description: "Uses token authentication."
+      group: cm
+  cm-cloud-api-cert-base-url:
+    value: "http://localhost"
+    targets:
+      - refVar: CLOUD_CERT_BASE_URL
+        services:
+          - gateway
+  cm-default-network-id:
+    targets:
+      - refVar: DEFAULT_NETWORK_ID
+        services:
+          - gateway
+    userInput:
+      type: text
+      name: Default network ID
+      group: cm
+    optional: true
+  cm-default-network-name:
+    value: "mgw-{did}"
+    targets:
+      - refVar: DEFAULT_NETWORK_NAME
+        services:
+          - gateway
+    userInput:
+      type: text
+      name: Default network name
+      description: "If the '{did}' placeholder is present it will be replaced with the current deployment ID."
+      group: cm
+    optional: true
+  cm-default-cert-validity-period:
+    value: "2160h"
+    targets:
+      - refVar: DEFAULT_CERT_VALIDITY_PERIOD
+        services:
+          - gateway
+    userInput:
+      type: text
+      name: Default certificate validity period
+      group: cm
+    optional: true
+  cm-mm-base-url:
+    value: http://core-api/module-manager
+    targets:
+      - refVar: MODULE_MANAGER_BASE_URL
+        services:
+          - gateway
+  cm-socket-path:
+    value: "/var/run/cert_manager.sock"
+    targets:
+      - refVar: SOCKET_PATH
+        services:
+          - gateway
+  cm-socket-group-id:
+    dataType: int
+    value: 101
+    targets:
+      - refVar: SOCKET_GROUP_ID
+        services:
+          - gateway
+  cm-pid-file-path:
+    value: "/var/run/cert_manager.pid"
+    targets:
+      - refVar: PID_FILE_PATH
+        services:
+          - gateway
+  proxy-cloud-api-host:
+    targets:
+      - refVar: CLOUD_API_HOST
+        services:
+          - gateway
+    userInput:
+      type: text
+      name: Host
+      description: "Uses certificate authentication."
+      group: proxy-cloud-api
+  proxy-cloud-api-port:
+    dataType: int
+    targets:
+      - refVar: CLOUD_API_PORT
+        services:
+          - gateway
+    userInput:
+      type: number
+      name: Port
+      group: proxy-cloud-api
+  proxy-cloud-mqtt-host:
+    targets:
+      - refVar: CLOUD_MQTT_HOST
+        services:
+          - gateway
+    userInput:
+      type: text
+      name: Host
+      description: "Uses certificate authentication."
+      group: proxy-cloud-mqtt
+  proxy-cloud-mqtt-port:
+    dataType: int
+    targets:
+      - refVar: CLOUD_MQTT_PORT
+        services:
+          - gateway
+    userInput:
+      type: number
+      name: Port
+      group: proxy-cloud-mqtt

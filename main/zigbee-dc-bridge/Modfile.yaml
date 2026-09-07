@@ -1,11 +1,19 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-zigbee-dc-module/bridging
 name: Zigbee Device-Connector Bridged
-version: v1.1.1
+version: v2.2.0
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
 dependencies:
+  github.com/SENERGY-Platform/mgw-device-repository-mirror-module:
+    version: "<v2.0.0"
+    requiredServices:
+      device-repo-mirror:
+        - refVar: DEVICE_REPOSITORY_URL
+          template: "http://{ref}:8080"
+          services:
+            - mgw-zigbee-dc
   github.com/SENERGY-Platform/mgw-mqtt-broker:
     version: <v2.0.0
     requiredServices:
@@ -17,21 +25,7 @@ dependencies:
 services:
   mgw-zigbee-dc:
     name: mgw-zigbee-dc
-    image: ghcr.io/senergy-platform/mgw-zigbee-dc:v1.1.1
-secrets:
-  auth:
-    type: basic-auth
-    targets:
-      - refVar: AUTH_USERNAME
-        item: username
-        services:
-          - mgw-zigbee-dc
-      - refVar: AUTH_PASSWORD
-        item: password
-        services:
-          - mgw-zigbee-dc
-    userInput:
-      name: Auth Credentials
+    image: ghcr.io/senergy-platform/mgw-zigbee-dc:v1.3.2
 configs:
   mqttBroker:
     dataType: string
@@ -128,28 +122,6 @@ configs:
       type: text
       name: Zigbee Topic Prefix
       group: zigbee
-  authUrl:
-    dataType: string
-    value: "https://auth.senergy.infai.org"
-    targets:
-      - refVar: AUTH_ENDPOINT
-        services:
-          - mgw-zigbee-dc
-    userInput:
-      type: text
-      name: Auth URL
-      group: platform
-  deviceRepositoryUrl:
-    dataType: string
-    value: "https://api.senergy.infai.org/device-repository"
-    targets:
-      - refVar: DEVICE_REPOSITORY_URL
-        services:
-          - mgw-zigbee-dc
-    userInput:
-      type: text
-      name: Device Repository URL
-      group: platform
 inputGroups: 
   mqtt:
     name: "MQTT"

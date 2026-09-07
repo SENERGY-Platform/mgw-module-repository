@@ -2,7 +2,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-solix-module
 name: Solix
-version: v0.0.11
+version: v1.2.0
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
@@ -17,7 +17,7 @@ dependencies:
 services:
   mgw-solix-dc:
     name: mgw-solix-dc
-    image: ghcr.io/senergy-platform/mgw-solix-dc:v0.0.11
+    image: ghcr.io/senergy-platform/mgw-solix-dc:v1.2.0
 configs:
   S2M_USER:
     optional: false
@@ -45,17 +45,6 @@ configs:
       type: text
     targets:
       - refVar: CONF_SOLIX_COUNTRY
-        services:
-          - mgw-solix-dc
-  S2M_POLL_INTERVAL:
-    optional: false
-    value: 60
-    dataType: int
-    userInput:
-      name: Poll Interval
-      type: number
-    targets:
-      - refVar: CONF_SENERGY_EVENTS_STATUS_SECONDS
         services:
           - mgw-solix-dc
   CONF_LOGGER_LEVEL:

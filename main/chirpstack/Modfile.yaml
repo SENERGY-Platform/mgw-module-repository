@@ -2,7 +2,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-chirpstack-module
 name: Chirpstack (LoRaWAN)
-version: v0.0.17
+version: v0.0.18
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
@@ -83,7 +83,8 @@ services:
       command: 
         - --server
         - chirpstack:8080
-        - --bind 0.0.0.0:8090
+        - --bind
+        - 0.0.0.0:8090
         - --insecure
     #ports:
     #- hostPort: 8090

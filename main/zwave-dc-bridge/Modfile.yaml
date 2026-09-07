@@ -1,11 +1,23 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-zwave-dc-module/bridging
 name: Z-Wave Device-Connector Bridged
-version: v0.3.2
+version: v1.3.0
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
 dependencies:
+  github.com/SENERGY-Platform/mgw-device-repository-mirror-module:
+    version: "<v2.0.0"
+    requiredServices:
+      device-repo-mirror:
+        - refVar: DEVICE_REPOSITORY_URL
+          template: "http://{ref}:8080"
+          services:
+            - mgw-zwave-dc
+        - refVar: DEVICE_MANAGER_URL
+          template: "http://{ref}:8080"
+          services:
+            - mgw-zwave-dc
   github.com/SENERGY-Platform/mgw-mqtt-broker:
     version: <v2.0.0
     requiredServices:
@@ -17,21 +29,7 @@ dependencies:
 services:
   mgw-zwave-dc:
     name: mgw-zwave-dc
-    image: ghcr.io/senergy-platform/mgw-zwave-dc:v1.2.1
-secrets:
-  auth:
-    type: basic-auth
-    targets:
-      - refVar: AUTH_USERNAME
-        item: username
-        services:
-          - mgw-zwave-dc
-      - refVar: AUTH_PASSWORD
-        item: password
-        services:
-          - mgw-zwave-dc
-    userInput:
-      name: Auth Credentials
+    image: ghcr.io/senergy-platform/mgw-zwave-dc:v1.4.1
 configs:
   mqttBroker:
     dataType: string
@@ -266,39 +264,6 @@ configs:
       type: text
       name: Z-Wave Network Event Topic
       group: zwave
-  authUrl:
-    dataType: string
-    value: "https://auth.senergy.infai.org"
-    targets:
-      - refVar: AUTH_ENDPOINT
-        services:
-          - mgw-zwave-dc
-    userInput:
-      type: text
-      name: Auth URL
-      group: platform
-  deviceRepositoryUrl:
-    dataType: string
-    value: "https://api.senergy.infai.org/device-repository"
-    targets:
-      - refVar: DEVICE_REPOSITORY_URL
-        services:
-          - mgw-zwave-dc
-    userInput:
-      type: text
-      name: Device-Repository URL
-      group: platform
-  deviceManagerUrl:
-    dataType: string
-    value: "https://api.senergy.infai.org/device-manager"
-    targets:
-      - refVar: DEVICE_MANAGER_URL
-        services:
-          - mgw-zwave-dc
-    userInput:
-      type: text
-      name: Device Manager URL
-      group: platform
   debug:
     dataType: string
     value: "false"
