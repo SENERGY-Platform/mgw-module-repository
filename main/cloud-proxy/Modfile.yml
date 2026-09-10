@@ -4,7 +4,7 @@ name: Cloud Proxy
 description: Provides access to cloud HTTP APIs and MQTT broker.
 license: Apache-2.0 license
 author: InfAI (CC SES)
-version: v0.1.0
+version: v0.1.1
 type: add-on
 deploymentType: single
 services:
@@ -68,6 +68,7 @@ configs:
       group: cm-log
     optional: true
   cm-cloud-auth-url:
+    value: "https://auth.senergy.infai.org/auth"
     targets:
       - refVar: KEYCLOAK_URL
         services:
@@ -89,6 +90,7 @@ configs:
         services:
           - gateway
   cm-cloud-api-token-base-url:
+    value: "https://api.senergy.infai.org"
     targets:
       - refVar: CLOUD_TOKEN_BASE_URL
         services:
@@ -163,6 +165,7 @@ configs:
         services:
           - gateway
   proxy-cloud-api-host:
+    value: "certapi.senergy.infai.org"
     targets:
       - refVar: CLOUD_API_HOST
         services:
@@ -173,6 +176,7 @@ configs:
       description: "Uses certificate authentication."
       group: proxy-cloud-api
   proxy-cloud-api-port:
+    value: 443
     dataType: int
     targets:
       - refVar: CLOUD_API_PORT
@@ -183,6 +187,7 @@ configs:
       name: Port
       group: proxy-cloud-api
   proxy-cloud-mqtt-host:
+    value: "certconnector.senergy.infai.org"
     targets:
       - refVar: CLOUD_MQTT_HOST
         services:
@@ -193,6 +198,7 @@ configs:
       description: "Uses certificate authentication."
       group: proxy-cloud-mqtt
   proxy-cloud-mqtt-port:
+    value: 28888
     dataType: int
     targets:
       - refVar: CLOUD_MQTT_PORT
