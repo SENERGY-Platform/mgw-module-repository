@@ -1,7 +1,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-mqtt-dc-module
 name: Mqtt Device-Connector
-version: v1.1.0
+version: v1.2.0
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
@@ -37,7 +37,7 @@ dependencies:
 services:
   mgw-mqtt-dc:
     name: mgw-mqtt-dc
-    image: ghcr.io/senergy-platform/mgw-mqtt-dc:v1.0.35
+    image: ghcr.io/senergy-platform/mgw-mqtt-dc:v1.1.0
 configs:
   ## broker config by dependency
   #  mqttBroker:
@@ -140,6 +140,18 @@ configs:
       - refVar: MGW_MQTT_CLIENT_ID
         services:
           - mgw-mqtt-dc
+  errorDeduplicationPeriod:
+    dataType: string
+    value: "1h"
+    targets:
+      - refVar: ERROR_DEDUPLICATION_PERIOD
+        services:
+          - mgw-mqtt-dc
+    userInput:
+      type: text
+      name: Error Deduplication Period
+      description: "An error message is forwarded to the MGW only if the same message has not been sent within this period, e.g. 1h. '-' disables the deduplication."
+      group: mqtt
   generatorUse:
     dataType: string
     value: "true"
