@@ -1,7 +1,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-process-module
 name: Process Module
-version: v1.4.0
+version: v1.5.0
 type: add-on
 deploymentType: single
 license: "Apache License 2.0"
@@ -16,12 +16,12 @@ services:
       - process-engine-db
   process-sync:
     name: process-sync
-    image: ghcr.io/senergy-platform/mgw-process-sync-client:v1.2.0
+    image: ghcr.io/senergy-platform/mgw-process-sync-client:v1.3.0
     requiredServices:
       - process-engine
   external-task-worker:
     name: external-task-worker
-    image: ghcr.io/senergy-platform/mgw-external-task-worker:v1.1.0
+    image: ghcr.io/senergy-platform/mgw-external-task-worker:v1.2.0
     requiredServices:
       - process-engine
   process-io-db:
@@ -186,6 +186,38 @@ configs:
       type: number
       description: time in ms
       name: Process-Task Retry Timeout
+  processTaskIncidentRetries:
+    dataType: int
+    value: 3
+    targets:
+      - refVar: INCIDENT_RETRIES
+        services:
+          - external-task-worker
+    userInput:
+      type: number
+      description: failed attempts of a task before an incident is created; attempts are one Process-Task Retry Timeout apart
+      name: Process-Task Retries before Incident
+  processIncidentRestartLimit:
+    dataType: int
+    value: 3
+    targets:
+      - refVar: INCIDENT_RESTART_LIMIT
+        services:
+          - process-sync
+    userInput:
+      type: number
+      description: restarts of a process (same business key) after incidents within the restart window; afterwards the process is stopped and further starts with this business key are rejected until the service restarts; 0 disables the limit
+      name: Process Incident Restart Limit
+  processIncidentRestartWindow:
+    dataType: string
+    value: "1h"
+    targets:
+      - refVar: INCIDENT_RESTART_WINDOW
+        services:
+          - process-sync
+    userInput:
+      type: text
+      name: Process Incident Restart Window
   processHistoryCleanupBatchSize:
     dataType: int
     value: 100
