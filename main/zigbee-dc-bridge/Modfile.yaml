@@ -1,7 +1,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-zigbee-dc-module/bridging
 name: Zigbee Device-Connector Bridged
-version: v2.2.0
+version: v2.2.1
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
@@ -25,7 +25,7 @@ dependencies:
 services:
   mgw-zigbee-dc:
     name: mgw-zigbee-dc
-    image: ghcr.io/senergy-platform/mgw-zigbee-dc:v1.3.2
+    image: ghcr.io/senergy-platform/mgw-zigbee-dc:v1.3.3
 configs:
   mqttBroker:
     dataType: string
