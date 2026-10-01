@@ -2,7 +2,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-mqtt-dc-module/bridging
 name: Mqtt Device-Connector (Bridging)
-version: v1.2.1
+version: v1.3.0
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
@@ -167,6 +167,18 @@ configs:
       - refVar: GENERATOR_USE
         services:
           - mgw-mqtt-dc
+  generatorFilterDevicesByAttribute:
+    dataType: string
+    optional: true
+    targets:
+      - refVar: GENERATOR_FILTER_DEVICES_BY_ATTRIBUTE
+        services:
+          - mgw-mqtt-dc
+    userInput:
+      type: text
+      name: Generator Device Filter
+      description: "Value of the device attribute 'senergy/local-mqtt' for which this MGW generates topics. Empty uses all devices of the account. Must be set if the account has more than one MGW with this module."
+      group: mqtt
   debug:
     dataType: string
     value: "false"
