@@ -2,7 +2,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-mqtt-dc-module/bridging
 name: Mqtt Device-Connector (Bridging)
-version: v1.3.1
+version: v1.4.0
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
@@ -34,7 +34,12 @@ dependencies:
 services:
   mgw-mqtt-dc:
     name: mgw-mqtt-dc
-    image: ghcr.io/senergy-platform/mgw-mqtt-dc:v1.1.2
+    image: ghcr.io/senergy-platform/mgw-mqtt-dc:v1.2.0
+volumes:
+  data:
+    - mountPoint: /root/data
+      services:
+        - mgw-mqtt-dc
 secrets:
   mqtt-credentials:
     optional: true
@@ -179,6 +184,29 @@ configs:
       name: Generator Device Filter
       description: "Value of the device attribute 'senergy/local-mqtt' for which this MGW generates topics. Empty uses all devices of the account. Must be set if the account has more than one MGW with this module."
       group: mqtt
+  activateDevicesOnEvent:
+    dataType: string
+    value: "false"
+    options:
+      - "true"
+      - "false"
+    optionsExt: false
+    targets:
+      - refVar: ACTIVATE_DEVICES_ON_EVENT
+        services:
+          - mgw-mqtt-dc
+    userInput:
+      type: text
+      name: Activate Devices on Event
+      description: "If true, a device with event topics is added to the hub only after its first event on the remote broker. Use this if the account has more than one MGW with this module and the devices of each MGW are recognizable by their messages."
+      group: remote-mqtt
+  activatedDevicesFile:
+    dataType: string
+    value: "/root/data/activated_devices.json"
+    targets:
+      - refVar: ACTIVATED_DEVICES_FILE
+        services:
+          - mgw-mqtt-dc
   debug:
     dataType: string
     value: "false"
