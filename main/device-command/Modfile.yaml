@@ -1,7 +1,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-device-command
 name: Device Command
-version: v2.3.0
+version: v2.3.1
 type: add-on
 deploymentType: single
 license: "Apache License 2.0"
@@ -41,7 +41,7 @@ dependencies:
 services:
   device-command:
     name: device-command
-    image: ghcr.io/senergy-platform/device-command:v1.1.0
+    image: ghcr.io/senergy-platform/device-command:v1.1.1
     ports:
       - port: 8080
         hostPort: 8002
@@ -55,20 +55,6 @@ volumes:
       services:
         - device-command
 configs:
-  iotFallbackFile:
-    dataType: string
-    value: "/vol/devicerepo_fallback.json"
-    targets:
-      - refVar: IOT_FALLBACK_FILE
-        services:
-          - device-command
-  useIotFallbackFile:
-    dataType: string
-    value: "true"
-    targets:
-      - refVar: USE_IOT_FALLBACK
-        services:
-          - device-command
   impl:
     dataType: string
     value: "mgw"
@@ -80,6 +66,9 @@ configs:
         services:
           - device-command
       - refVar: COM_IMPL
+        services:
+          - device-command
+      - refVar: IOT_IMPL
         services:
           - device-command
   debug:

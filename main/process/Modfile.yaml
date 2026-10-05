@@ -1,7 +1,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-process-module
 name: Process Module
-version: v1.5.1
+version: v1.5.2
 type: add-on
 deploymentType: single
 license: "Apache License 2.0"
@@ -35,7 +35,7 @@ services:
       - process-io-db
   event-worker:
     name: event-worker
-    image: ghcr.io/senergy-platform/event-worker:v1.2.0
+    image: ghcr.io/senergy-platform/event-worker:v1.2.1
     requiredServices:
       - process-engine
 dependencies:
