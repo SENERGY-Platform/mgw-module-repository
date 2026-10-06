@@ -1,7 +1,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-device-repository-mirror-module
 name: Device-Repository Mirror Module
-version: v1.3.0
+version: v1.4.0
 type: add-on
 deploymentType: single
 license: "Apache License 2.0"
@@ -11,7 +11,7 @@ services:
     image: mongo:4.1.11
   device-repo-mirror:
     name: device-repo-mirror
-    image: ghcr.io/senergy-platform/device-repository:v3.1.0
+    image: ghcr.io/senergy-platform/device-repository:v3.2.0
     requiredServices:
       - device-repo-mirror-db
 dependencies:
@@ -56,6 +56,39 @@ configs:
     userInput:
       type: text
       name: Mirror Update Interval
+  mirrorMissPullTimeout:
+    dataType: string
+    value: "10s"
+    targets:
+      - refVar: MGW_MIRROR_MISS_PULL_TIMEOUT
+        services:
+          - device-repo-mirror
+    userInput:
+      type: text
+      description: "max wait for the pull a 404 on a mirror GET triggers, defaults to 10s"
+      name: Mirror Miss Pull Timeout
+  mirrorMissPullBackoff:
+    dataType: string
+    value: "10s"
+    targets:
+      - refVar: MGW_MIRROR_MISS_PULL_BACKOFF
+        services:
+          - device-repo-mirror
+    userInput:
+      type: text
+      description: "wait before the same GET may pull again after its pull found nothing, defaults to 10s"
+      name: Mirror Miss Pull Backoff
+  mirrorMissPullMaxBackoff:
+    dataType: string
+    value: "5m"
+    targets:
+      - refVar: MGW_MIRROR_MISS_PULL_MAX_BACKOFF
+        services:
+          - device-repo-mirror
+    userInput:
+      type: text
+      description: "the backoff doubles per miss up to this value, defaults to 5m"
+      name: Mirror Miss Pull Max Backoff
   mongoDatabase:
     dataType: string
     value: "devicerepository"
