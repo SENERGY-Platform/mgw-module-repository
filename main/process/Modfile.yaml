@@ -9,7 +9,7 @@ license: "Apache License 2.0"
 services:
   automation-engine:
     name: automation-engine
-    image: ghcr.io/senergy-platform/automation-engine:dev
+    image: ghcr.io/senergy-platform/automation-engine:v0.1.5
     requiredServices:
       - process-io-db
   # Postgres of process-io-worker from v1.x, kept for this version only: the engine takes its
