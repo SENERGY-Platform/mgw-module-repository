@@ -2,14 +2,14 @@ modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-process-module
 name: Process Module
 description: "Runs processes deployed from the cloud on the gateway with the automation-engine (MODE=fog, SQLite)."
-version: v2.0.0
+version: v2.1.0
 type: add-on
 deploymentType: single
 license: "Apache License 2.0"
 services:
   automation-engine:
     name: automation-engine
-    image: ghcr.io/senergy-platform/automation-engine:v0.1.5
+    image: ghcr.io/senergy-platform/automation-engine:v0.5.0
     requiredServices:
       - process-io-db
   # Postgres of process-io-worker from v1.x, kept for this version only: the engine takes its
@@ -65,6 +65,10 @@ volumes:
     - mountPoint: /var/lib/postgresql/data
       services:
         - process-io-db
+inputGroups:
+  http:
+    name: HTTP calls
+    description: targets the HTTP tasks of processes on this gateway may call; deny lists win, without allow lists every target is allowed
 configs:
   engineMode:
     dataType: string
@@ -176,3 +180,123 @@ configs:
       - refVar: PGDATA
         services:
           - process-io-db
+  engineTracing:
+    dataType: string
+    value: "off"
+    targets:
+      - refVar: OTEL_ENDPOINT
+        services:
+          - automation-engine
+  httpEnabled:
+    dataType: string
+    value: "true"
+    options:
+      - "true"
+      - "false"
+    optionsExt: false
+    targets:
+      - refVar: HTTP_ENABLED
+        services:
+          - automation-engine
+    userInput:
+      type: text
+      name: Enabled
+      description: whether processes may make HTTP calls at all
+      group: http
+  httpAllowHosts:
+    dataType: string
+    isList: true
+    targets:
+      - refVar: HTTP_ALLOW_HOSTS
+        services:
+          - automation-engine
+    userInput:
+      type: text
+      name: Allowed hosts
+      description: "host names, *.example.org for its subdomains, e.g. api.sunrise-sunset.org, *.example.org"
+      group: http
+    optional: true
+  httpDenyHosts:
+    dataType: string
+    isList: true
+    targets:
+      - refVar: HTTP_DENY_HOSTS
+        services:
+          - automation-engine
+    userInput:
+      type: text
+      name: Denied hosts
+      description: host names that are never called, also when an allowed network contains them
+      group: http
+    optional: true
+  httpAllowNetworks:
+    dataType: string
+    isList: true
+    value:
+      - "10.0.0.0/8"
+      - "172.16.0.0/12"
+      - "192.168.0.0/16"
+      - "fc00::/7"
+      - "fe80::/10"
+    targets:
+      - refVar: HTTP_ALLOW_NETWORKS
+        services:
+          - automation-engine
+    userInput:
+      type: text
+      name: Allowed networks
+      description: "networks in CIDR notation, e.g. 192.168.0.0/16; the default is the local network. Empty together with the allowed hosts allows every target"
+      group: http
+    optional: true
+  httpDenyNetworks:
+    dataType: string
+    isList: true
+    targets:
+      - refVar: HTTP_DENY_NETWORKS
+        services:
+          - automation-engine
+    userInput:
+      type: text
+      name: Denied networks
+      description: networks in CIDR notation that are never called, checked on the resolved address
+      group: http
+    optional: true
+  httpAllowPorts:
+    dataType: int
+    isList: true
+    targets:
+      - refVar: HTTP_ALLOW_PORTS
+        services:
+          - automation-engine
+    userInput:
+      type: number
+      name: Allowed ports
+      description: "e.g. 80, 443; empty allows every port"
+      group: http
+    optional: true
+  httpTimeout:
+    dataType: string
+    value: "10s"
+    targets:
+      - refVar: HTTP_TIMEOUT
+        services:
+          - automation-engine
+    userInput:
+      type: text
+      name: Timeout
+      description: "time limit of one call, e.g. 10s or 1m"
+      group: http
+    optional: true
+  httpMaxResponseBytes:
+    dataType: int
+    value: 1048576
+    targets:
+      - refVar: HTTP_MAX_RESPONSE_BYTES
+        services:
+          - automation-engine
+    userInput:
+      type: number
+      name: Maximum response size
+      description: larger responses fail the task, in bytes
+      group: http
+    optional: true
