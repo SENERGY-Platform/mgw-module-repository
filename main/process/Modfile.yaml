@@ -2,14 +2,14 @@ modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-process-module
 name: Process Module
 description: "Runs processes deployed from the cloud on the gateway with the automation-engine (MODE=fog, SQLite)."
-version: v2.1.0
+version: v2.2.0
 type: add-on
 deploymentType: single
 license: "Apache License 2.0"
 services:
   automation-engine:
     name: automation-engine
-    image: ghcr.io/senergy-platform/automation-engine:v0.5.0
+    image: ghcr.io/senergy-platform/automation-engine:v0.8.0
     requiredServices:
       - process-io-db
   # Postgres of process-io-worker from v1.x, kept for this version only: the engine takes its
@@ -102,16 +102,16 @@ configs:
       type: text
       name: MQTT Client ID
       description: client id on the broker of the gateway; must not be used by another client of that broker
-  engineStorageBudget:
-    dataType: int
-    value: 0
+  engineStorageLimit:
+    dataType: string
+    value: "1GiB"
     targets:
       - refVar: STORAGE_BUDGET
         services:
           - automation-engine
     userInput:
-      type: number
-      description: upper bound of the database in bytes; 0 uses the default of 1 GiB, a negative value is unlimited
+      type: text
+      description: "upper bound of the database, e.g. 500MiB or 2GiB (units B, kB, MB, GB, KiB, MiB, GiB); -1 is unlimited"
       name: Storage Budget
     optional: true
   timezone:
