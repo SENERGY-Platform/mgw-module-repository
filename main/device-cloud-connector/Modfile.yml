@@ -4,7 +4,7 @@ name: Device Cloud-Connector
 description: Connect local devices to the Cloud.
 license: Apache-2.0 license
 author: InfAI (CC SES)
-version: v0.7.6
+version: v0.8.0
 type: add-on
 deploymentType: single
 dependencies:
@@ -43,7 +43,7 @@ dependencies:
 services:
   connector:
     name: Connector
-    image: ghcr.io/senergy-platform/mgw-device-cloud-connector:0.7.6
+    image: ghcr.io/senergy-platform/mgw-device-cloud-connector:0.8.0
 volumes:
   event-data:
     - mountPoint: /opt/connector/event-data
@@ -262,3 +262,15 @@ configs:
       description: "Set the maximum age for device events in nanoseconds."
       group: msg-relay-events-in-memory
     optional: true
+  hr-mm-base-url:
+    value: http://core-api/module-manager
+    targets:
+      - refVar: HR_MM_BASE_URL
+        services:
+          - connector
+  hr-cm-base-url:
+    value: http://core-api/core-manager
+    targets:
+      - refVar: HR_CM_BASE_URL
+        services:
+          - connector
