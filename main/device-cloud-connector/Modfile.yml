@@ -4,7 +4,7 @@ name: Device Cloud-Connector
 description: Connect local devices to the Cloud.
 license: Apache-2.0 license
 author: InfAI (CC SES)
-version: v0.8.0
+version: v0.8.1
 type: add-on
 deploymentType: single
 dependencies:
@@ -129,6 +129,19 @@ configs:
     userInput:
       type: number
       name: Cloud MQTT publish qos level
+      group: cloud-mqtt
+    optional: true
+  cloud-mqtt-ping-timeout:
+    dataType: int
+    value: 15000000000
+    targets:
+      - refVar: CLOUD_MQTT_PING_TIMEOUT
+        services:
+          - connector
+    userInput:
+      type: number
+      name: Cloud MQTT ping timeout
+      description: "Set Cloud MQTT ping timeout in nanoseconds."
       group: cloud-mqtt
     optional: true
   cloud-mqtt-sub-qos:
