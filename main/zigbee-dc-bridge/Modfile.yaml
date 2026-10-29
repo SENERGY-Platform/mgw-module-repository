@@ -1,7 +1,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-zigbee-dc-module/bridging
 name: Zigbee Device-Connector Bridged
-version: v2.3.1
+version: v2.4.0
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
@@ -135,6 +135,19 @@ configs:
       name: Device Last Message Max Age
       description: "Sets the device attribute 'last_message_max_age' on every zigbee device: a device whose last message is older counts as offline. Go duration, e.g. 1h or 30m (not 7d). Empty sets no attribute. The default 25h follows zigbee2mqtt's availability timeout for battery-powered devices, so a sleeping sensor is not marked offline."
       group: platform
+  eventRefreshInterval:
+    dataType: string
+    value: "1h"
+    optional: true
+    targets:
+      - refVar: EVENT_REFRESH_INTERVAL
+        services:
+          - mgw-zigbee-dc
+    userInput:
+      type: text
+      name: Event Refresh Interval
+      description: "Interval for requesting all device values, e.g. 1h. '-' disables it."
+      group: zigbee
 inputGroups: 
   mqtt:
     name: "MQTT"
