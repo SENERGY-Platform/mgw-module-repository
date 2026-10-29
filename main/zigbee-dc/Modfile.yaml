@@ -42,7 +42,7 @@ hostResources:
 services:
   zigbee2mqtt:
     name: zigbee2mqtt
-    image: koenkk/zigbee2mqtt:2.2.1
+    image: koenkk/zigbee2mqtt:2.14.2
     runConfig:
       pseudoTTY: true
 #    ports:
