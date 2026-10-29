@@ -4,7 +4,7 @@ name: MQTT Broker
 description: Eclipse Mosquitto MQTT broker with TLS support.
 license: Apache-2.0 license
 author: InfAI (CC SES)
-version: v1.3.2
+version: v1.4.0
 type: add-on
 tags:
   - mqtt
@@ -13,7 +13,7 @@ deploymentType: single
 services:
   broker:
     name: Mosquitto MQTT Broker
-    image: ghcr.io/senergy-platform/mosquitto-mqtt-broker:v1.3.2
+    image: ghcr.io/senergy-platform/mosquitto-mqtt-broker:v1.4.0
     ports:
       - port: 1883
         hostPort: 1883
@@ -84,3 +84,17 @@ configs:
     userInput:
       type: text
       name: Use authentication
+  tcp_nodelay:
+    dataType: string
+    value: "no"
+    options:
+      - "yes"
+      - "no"
+    targets:
+      - refVar: TCP_NODELAY
+        services:
+          - broker
+    userInput:
+      type: text
+      name: Disable Nagle's algorithm (TCP_NODELAY)
+      description: Lower latency between modules, more TCP packets. Applies to all listeners.
