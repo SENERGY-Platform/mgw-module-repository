@@ -2,7 +2,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-chirpstack-module
 name: Chirpstack (LoRaWAN)
-version: v0.0.20
+version: v0.0.21
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
@@ -28,6 +28,11 @@ serviceReferences:
     - refVar: REDIS_HOST
       services:
         - chirpstack
+  chirpstack:
+    - refVar: SERVER
+      template: "{ref}:8080"
+      services:
+        - chirpstack-rest-api
 services:
   chirpstack:
     name: chirpstack
@@ -81,8 +86,6 @@ services:
     image: chirpstack/chirpstack-rest-api:4
     runConfig:
       command: 
-        - --server
-        - chirpstack:8080
         - --bind
         - 0.0.0.0:8090
         - --insecure
