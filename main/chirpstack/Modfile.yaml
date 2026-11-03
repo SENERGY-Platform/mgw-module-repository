@@ -2,7 +2,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-chirpstack-module
 name: Chirpstack (LoRaWAN)
-version: v0.0.18
+version: v0.0.20
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
@@ -136,6 +136,16 @@ configs:
       - refVar: POSTGRES_PASSWORD
         services:
           - postgres
+secrets:
+  api-secret:
+    type: api-key
+    targets:
+      - refVar: API_SECRET
+        services:
+          - chirpstack
+    userInput:
+      name: API Secret
+      description: Signs ChirpStack's login and API tokens. Use a random value, e.g. from openssl rand -base64 32, without quotes or backslashes. Changing it invalidates all tokens and API keys.
 volumes:
   lorawan-devices:
     - mountPoint: /opt/lorawan-devices
