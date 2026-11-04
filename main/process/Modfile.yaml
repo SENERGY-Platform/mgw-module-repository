@@ -2,14 +2,14 @@ modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-process-module
 name: Process Module
 description: "Runs processes deployed from the cloud on the gateway with the automation-engine (MODE=fog, SQLite)."
-version: v2.14.1
+version: v2.15.0
 type: add-on
 deploymentType: single
 license: "Apache License 2.0"
 services:
   automation-engine:
     name: automation-engine
-    image: ghcr.io/senergy-platform/automation-engine:v0.29.2
+    image: ghcr.io/senergy-platform/automation-engine:v0.30.0
     requiredServices:
       - process-io-db
   # Postgres of process-io-worker from v1.x, kept for this version only: the engine takes its
@@ -94,6 +94,15 @@ configs:
     value: "/root/data/automation-engine.db"
     targets:
       - refVar: SQLITE_PATH
+        services:
+          - automation-engine
+  # crash brake: a script that ends the engine with a fatal error runs only once; in the volume,
+  # so that it survives the restart of the container
+  engineScriptCrashDir:
+    dataType: string
+    value: "/root/data/crash-brake"
+    targets:
+      - refVar: SCRIPT_CRASH_DIR
         services:
           - automation-engine
   engineMqttClientId:
