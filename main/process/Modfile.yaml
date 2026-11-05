@@ -2,14 +2,14 @@ modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-process-module
 name: Process Module
 description: "Runs processes deployed from the cloud on the gateway with the automation-engine (MODE=fog, SQLite)."
-version: v2.16.0
+version: v2.17.0
 type: add-on
 deploymentType: single
 license: "Apache License 2.0"
 services:
   automation-engine:
     name: automation-engine
-    image: ghcr.io/senergy-platform/automation-engine:v0.32.0
+    image: ghcr.io/senergy-platform/automation-engine:v0.33.1
     requiredServices:
       - process-io-db
   # Postgres of process-io-worker from v1.x, kept for this version only: the engine takes its
@@ -74,6 +74,9 @@ inputGroups:
   http:
     name: HTTP calls
     description: targets the HTTP tasks of processes on this gateway may call; deny lists win, without allow lists every target is allowed
+  deviceGroups:
+    name: Device groups
+    description: how a device command to a device group sends its commands to the devices
 configs:
   engineMode:
     dataType: string
@@ -165,6 +168,37 @@ configs:
     userInput:
       type: text
       name: Log level
+    optional: true
+  groupScheduler:
+    dataType: string
+    value: "round_robin"
+    options:
+      - "round_robin"
+      - "sequential"
+      - "parallel"
+    optionsExt: false
+    targets:
+      - refVar: GROUP_SCHEDULER
+        services:
+          - automation-engine
+    userInput:
+      type: text
+      name: Scheduler
+      description: "round_robin: one device after the other, a retry waits until the other devices had their try; sequential: the same, but a device without answer gets its retries first; parallel: all devices at once"
+      group: deviceGroups
+    optional: true
+  groupConcurrency:
+    dataType: int
+    value: 1
+    targets:
+      - refVar: GROUP_CONCURRENCY
+        services:
+          - automation-engine
+    userInput:
+      type: number
+      name: Concurrency
+      description: "for sequential and round_robin, how many devices wait for their answer at the same time; 1 is one at a time. A process can set its own with senergy:groupConcurrency"
+      group: deviceGroups
     optional: true
   processIoDbName:
     dataType: string
