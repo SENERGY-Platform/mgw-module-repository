@@ -1,7 +1,7 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-zwave-dc-module/bridging
 name: Z-Wave Device-Connector Bridged
-version: v1.4.0
+version: v1.5.0
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
@@ -278,6 +278,19 @@ configs:
     userInput:
       type: text
       name: DEBUG
+  commandAckTimeout:
+    dataType: string
+    value: "30s"
+    optional: true
+    targets:
+      - refVar: COMMAND_ACK_TIMEOUT
+        services:
+          - mgw-zwave-dc
+    userInput:
+      type: text
+      name: Command Acknowledgement Timeout
+      description: "How long a set command waits for zwave-js-ui to confirm the write before the command is reported as failed. Go duration, e.g. 30s. '-' or 0s answers right after sending, as before. Only used with the zwavejs2mqtt controller."
+      group: zwave
 inputGroups: 
   mqtt:
     name: "MQTT"
