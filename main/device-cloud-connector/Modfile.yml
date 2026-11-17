@@ -4,7 +4,7 @@ name: Device Cloud-Connector
 description: Connect local devices to the Cloud.
 license: Apache-2.0 license
 author: InfAI (CC SES)
-version: v0.9.0
+version: v0.10.0
 type: add-on
 deploymentType: single
 dependencies:
@@ -43,7 +43,7 @@ dependencies:
 services:
   connector:
     name: Connector
-    image: ghcr.io/senergy-platform/mgw-device-cloud-connector:0.9.0
+    image: ghcr.io/senergy-platform/mgw-device-cloud-connector:0.10.0
 volumes:
   event-data:
     - mountPoint: /opt/connector/event-data
@@ -281,9 +281,15 @@ configs:
       - refVar: HR_MM_BASE_URL
         services:
           - connector
-  hr-cm-base-url:
-    value: http://core-api/core-manager
+  hr-core-health-url:
+    value: http://core-api/core-health
     targets:
-      - refVar: HR_CM_BASE_URL
+      - refVar: HR_CORE_HEALTH_URL
+        services:
+          - connector
+  hr-core-health-deprecated-url:
+    value: http://core-api/core-manager/health
+    targets:
+      - refVar: HR_CORE_HEALTH_DEPRECATED_URL
         services:
           - connector
