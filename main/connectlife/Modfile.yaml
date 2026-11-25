@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SENERGY-Platform/mgw-modfile-lib/main/schema/v1.json
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-connectlife-dc-module
+name: ConnectLife
+description: "Connects ConnectLife appliances (Hisense, Gorenje, ASKO) via the ConnectLife cloud. Creates a device type per appliance model on the platform if none exists."
+version: v0.1.0
+type: device-connector
+deploymentType: single
+license: "Apache License 2.0"
+author: InfAI (CC SES)
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: MGW_MQTT_BROKER
+          template: "tcp://{ref}:1881"
+          services:
+            - connector
+  github.com/SENERGY-Platform/mgw-cloud-proxy/mgw-module:
+    version: <v1.0.0
+    requiredServices:
+      gateway:
+        - refVar: PLATFORM_API_URL
+          template: "http://{ref}:80"
+          services:
+            - connector
+services:
+  connector:
+    name: connector
+    image: ghcr.io/senergy-platform/mgw-connectlife-dc:v0.1.0
+inputGroups:
+  account:
+    name: ConnectLife Account
+configs:
+  username:
+    dataType: string
+    targets:
+      - refVar: CONNECTLIFE_USERNAME
+        services:
+          - connector
+    userInput:
+      type: text
+      name: E-Mail
+      group: account
+  password:
+    dataType: string
+    targets:
+      - refVar: CONNECTLIFE_PASSWORD
+        services:
+          - connector
+    userInput:
+      type: text
+      name: Password
+      group: account
+  pollInterval:
+    dataType: string
+    value: "1m"
+    optional: true
+    targets:
+      - refVar: POLL_INTERVAL
+        services:
+          - connector
+    userInput:
+      type: text
+      name: Poll Interval
+      group: account
+  logLevel:
+    dataType: string
+    value: "info"
+    options:
+      - "debug"
+      - "info"
+      - "warn"
+      - "error"
+    optional: true
+    targets:
+      - refVar: LOG_LEVEL
+        services:
+          - connector
+    userInput:
+      type: text
+      name: Log Level
