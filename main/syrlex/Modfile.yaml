@@ -2,7 +2,8 @@
 modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-syrlex-module
 name: SyrLex
-version: v0.0.6
+description: "Emulates the SYR Connect cloud for SYR LEX Plus water softeners and makes them available via MQTT. Needs a local DNS server that resolves the SYR Connect hostnames to the gateway."
+version: v0.1.0
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
@@ -15,17 +16,18 @@ dependencies:
           template: "tcp://{ref}:1881"
           services:
             - syrlex2mqtt
+  github.com/SENERGY-Platform/mgw-sni-router-module:
+    version: <v2.0.0
+    requiredServices:
+      sni-router:
+        - refVar: SNI_ROUTER_URL
+          template: "http://{ref}:8080"
+          services:
+            - syrlex2mqtt
 services:
   syrlex2mqtt:
     name: syrlex2mqtt
-    image: ghcr.io/senergy-platform/syrlex2mqtt:v0.0.6
-    ports:
-      - name: http
-        hostPort: 80
-        port: 80
-      - name: https
-        hostPort: 443
-        port: 443
+    image: ghcr.io/senergy-platform/syrlex2mqtt:v0.1.0
 configs:
   MQTT_USER:
     value: " "

@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SENERGY-Platform/mgw-modfile-lib/main/schema/v1.json
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-sni-router-module
+name: SNI Router
+description: "Shares host ports 80 and 443 between modules that emulate a device vendor's cloud. Forwards each connection by TLS server name or HTTP Host header to the module that registered the hostname."
+version: v0.1.0
+type: add-on
+deploymentType: single
+license: "Apache License 2.0"
+services:
+  sni-router:
+    name: sni-router
+    image: ghcr.io/senergy-platform/mgw-sni-router:v0.1.0
+    ports:
+      - name: http
+        hostPort: 80
+        port: 80
+      - name: https
+        hostPort: 443
+        port: 443
+configs:
+  LOGGER_LEVEL:
+    dataType: string
+    value: "info"
+    optionsExt: false
+    options:
+      - "info"
+      - "debug"
+    userInput:
+      name: Log Level
+      type: text
+    targets:
+      - refVar: LOGGER_LEVEL
+        services:
+          - sni-router
