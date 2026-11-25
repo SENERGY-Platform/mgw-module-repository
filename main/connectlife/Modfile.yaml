@@ -3,7 +3,7 @@ modfileVersion: "v1"
 id: github.com/SENERGY-Platform/mgw-connectlife-dc-module
 name: ConnectLife
 description: "Connects ConnectLife appliances (Hisense, Gorenje, ASKO) via the ConnectLife cloud. Creates a device type per appliance model on the platform if none exists."
-version: v0.1.0
+version: v0.1.1
 type: device-connector
 deploymentType: single
 license: "Apache License 2.0"
@@ -28,7 +28,7 @@ dependencies:
 services:
   connector:
     name: connector
-    image: ghcr.io/senergy-platform/mgw-connectlife-dc:v0.1.0
+    image: ghcr.io/senergy-platform/mgw-connectlife-dc:v0.1.1
 inputGroups:
   account:
     name: ConnectLife Account
