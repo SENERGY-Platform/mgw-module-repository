@@ -1,0 +1,187 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SENERGY-Platform/mgw-modfile-lib/main/schema/v1.json
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-samsung-dc-module
+name: Samsung Device-Connector
+description: "Reads Samsung refrigerators locally over OCF/CoAP in the LAN and reports temperatures, door states and energy values. Writes setpoints and rapid cooling back. One deployment serves several appliances. The client identity of the connector has to be granted access on each appliance once."
+version: v0.0.1
+type: device-connector
+deploymentType: single
+license: "Apache License 2.0"
+author: InfAI (CC SES)
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: <v2.0.0
+    requiredServices:
+      broker:
+        - refVar: MGW_MQTT_BROKER
+          template: "tcp://{ref}:1881"
+          services:
+            - mgw-samsung-dc
+services:
+  mgw-samsung-dc:
+    name: mgw-samsung-dc
+    image: ghcr.io/senergy-platform/mgw-samsung-dc:v0.0.1
+volumes:
+  client_cert:
+    - mountPoint: /data/client-cert
+      services:
+        - mgw-samsung-dc
+configs:
+  certPath:
+    dataType: string
+    value: "/data/client-cert"
+    targets:
+      - refVar: CERT_PATH
+        services:
+          - mgw-samsung-dc
+  connectorId:
+    dataType: string
+    targets:
+      - refVar: CONNECTOR_ID
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: text
+      name: Connector ID
+      description: "Unique id for this connector installation"
+  deviceTypeId:
+    dataType: string
+    value: "urn:infai:ses:device-type:cb2cfd90-1ab8-4a6d-a457-7d84e0d4b1fc"
+    optional: true
+    targets:
+      - refVar: DEVICE_TYPE_ID
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: text
+      name: Device Type
+      description: "SENERGY device type of the refrigerator"
+  mgwMqttUser:
+    dataType: string
+    optional: true
+    targets:
+      - refVar: MGW_MQTT_USER
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: text
+      name: MGW MQTT User
+  mgwMqttPw:
+    dataType: string
+    optional: true
+    targets:
+      - refVar: MGW_MQTT_PW
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: text
+      name: MGW MQTT Password
+  ocfHost:
+    dataType: string
+    isList: true
+    targets:
+      - refVar: OCF_HOST
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: text
+      name: Appliance IPs
+      description: "IP addresses of the refrigerators in the local network, one entry each. An entry may carry its own port, e.g. 192.168.0.6:49156"
+  ocfPort:
+    dataType: int
+    value: 49155
+    optional: true
+    targets:
+      - refVar: OCF_PORT
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: number
+      name: OCF Port
+      description: "Port of an appliance that does not carry its own"
+  pollInterval:
+    dataType: string
+    value: "60s"
+    optional: true
+    targets:
+      - refVar: POLL_INTERVAL
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: text
+      name: Poll Interval
+      description: "Default for every read service, e.g. 60s, 1m"
+  pollIntervalDoors:
+    dataType: string
+    value: "10s"
+    optional: true
+    targets:
+      - refVar: POLL_INTERVAL_DOORS
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: text
+      name: Poll Interval Doors
+      description: "How often the door state is read, e.g. 10s"
+  pollIntervalTemperatures:
+    dataType: string
+    value: "60s"
+    optional: true
+    targets:
+      - refVar: POLL_INTERVAL_TEMPERATURES
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: text
+      name: Poll Interval Temperatures
+      description: "How often temperatures and setpoints are read, e.g. 60s"
+  pollIntervalEnergy:
+    dataType: string
+    value: "60s"
+    optional: true
+    targets:
+      - refVar: POLL_INTERVAL_ENERGY
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: text
+      name: Poll Interval Energy
+      description: "How often power and consumption are read, e.g. 60s"
+  pollIntervalRefrigeration:
+    dataType: string
+    value: "300s"
+    optional: true
+    targets:
+      - refVar: POLL_INTERVAL_REFRIGERATION
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: text
+      name: Poll Interval Rapid Cooling
+      description: "How often the rapid fridge and rapid freezing flags are read, e.g. 300s"
+  pollIntervalIcemaker:
+    dataType: string
+    value: "60s"
+    optional: true
+    targets:
+      - refVar: POLL_INTERVAL_ICEMAKER
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: text
+      name: Poll Interval Ice Maker
+      description: "How often the ice maker is read, e.g. 60s"
+  debug:
+    dataType: string
+    value: "false"
+    options:
+      - "false"
+      - "true"
+    optional: true
+    targets:
+      - refVar: DEBUG
+        services:
+          - mgw-samsung-dc
+    userInput:
+      type: text
+      name: Debug
